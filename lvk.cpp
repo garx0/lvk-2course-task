@@ -6,6 +6,8 @@
 
 using namespace std;
 
+//test comment
+
 class Exc {
 public:
 	enum class Type {
