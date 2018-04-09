@@ -6,43 +6,6 @@
 
 using namespace std;
 
-/*
-template<class T> class Array {
-	T* ptr;
-	int size;
-public:
-	Array(): size(0), ptr(nullptr) {}
-	Array(int a_size);
-	setSize(int a_size);
-	//...
-};
-
-Array<T>::Array(int a_size) {
-	if (a_size < 0) {
-		throw false;
-	}
-	size = a_size;
-	if (size == 0) {
-		ptr = new T[a_size]();
-	} else {
-		ptr = nullptr;
-	}
-}
-
-Array<T>::setSize(int a_size)
-{
-	if (a_size < 0) throw false;
-	if (size == 0) {
-		size = a_size;
-		if(a_size != 0) {
-			ptr = new T[a_size]();
-		}
-	} else {
-		throw false;
-	}
-}
-*/
-
 class Exc {
 public:
 	enum class Type {
