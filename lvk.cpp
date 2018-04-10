@@ -105,6 +105,7 @@ public:
 	double getCost();
 	const double& limitCost() const {return limitCost_;}
 	double& limitCost() {return limitCost_;}
+	void printTest() const; //DEBUG
 };
 
 double System::getRel() {
@@ -172,6 +173,26 @@ void sysGenFromXml(System& system, const char* filename) {
 	}	
 }
 
+void System::printTest() const { //DEBUG
+	cout << "limitcost = " << limitCost_ << endl;
+	int n = modules.size();
+	for(int i = 0; i < n; i++) {
+		cout << "module " << i << ":" << endl;
+		int nHard = modules[i].hardVersions.size();
+		for(int j = 0; j < nHard; j++) {
+			cout << "	hard " << j << ": rel = " <<
+				modules[i].hardVersions[j].rel << ", cost = " <<
+				modules[i].hardVersions[j].cost << endl;
+		}
+		int nSoft = modules[i].softVersions.size();
+		for(int j = 0; j < nSoft; j++) {
+			cout << "	soft " << j << ": rel = " <<
+				modules[i].softVersions[j].rel << ", cost = " <<
+				modules[i].softVersions[j].cost << endl;
+		}
+	}
+}
+
 /*
 void sysSaveToXml(System& system, const char* filename) {
 //сохраняет данные о системе и всех версиях оборудования
@@ -221,5 +242,6 @@ void sysSaveToXml(System& system, const char* filename) {
 int main(int argc, const char** argv) {
 	System system;
 	sysGenFromXml(system, "example.xml");
+	system.printTest();
 	return 0;
 }
