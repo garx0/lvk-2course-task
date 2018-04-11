@@ -120,6 +120,7 @@ System::System(const System& system)
 {
 	modules = system.modules;
 	limitCost_ = system.limitCost_;
+	cout << "KK\n"; //DEBUG
 }
 
 int System::getNWareVersions(int moduleNo, Ware::Type wareType) const
@@ -298,7 +299,8 @@ void sysSaveToXml(System& system, const char* filename)
 			for(int j = 1; j <= nWare; j++) {
 				pugi::xml_node wareNode = 
 					moduleNode.append_child(wareTypeStr);
-				wareNode.append_attribute("num") = j;
+				wareNode.append_attribute("num") = 
+					system.getWareVersion(i, wareType, j).num;
 				sprintf(buf, "%.3lf", 
 					system.getWareVersion(i, wareType, j).rel);
 				wareNode.append_attribute("rel") = buf;
@@ -336,13 +338,7 @@ int findMinGEWareNo(const System& system, double val, int moduleNo, int wareType
 void sortVersions(System& system)
 {
 	int nModules = system.getNModules();
-	for(int i = 1; i <= nModules; i++) {
-		/*
-		for(int k = 0; k < 2; k++) {
-			System::Ware::Type wareType = System::Ware::intToType(k);
-			//int nWare = system.getNWareVersions(i, wareType);
-		}
-		*/
+	for(int i = 0; i < nModules; i++) {
 		sort(system.modules[i].softVersions.begin(),
 			system.modules[i].softVersions.end() );
 		//третий арг. - operator< (по умолч.)
@@ -352,18 +348,70 @@ void sortVersions(System& system)
 	}
 }
 
-//void findOptGenerous(System& system) 
-//{
+void findOptGenerous(System& system) 
+{
 /*
  * a < b === должен ли a идти перед b
  * comp = operator<=
  */
+	double rel = 1;
+	double cost0, cost;
+	double limitCost = system.limitCost();
+	System system1 = system;
+	sortVersions(system1);
+	int nModules = system.getNModules();
+	for(int i = 1; i <= nModules; i++) {
+		for(int k = 0; k < 2; k++) {
+			System::Ware::Type wareType = System::Ware::intToType(k);
+			system1.curWareVersionNo(i, wareType) = 1;
+				//1, т.к. берем наименее надежную
+				//пока храним в качестве curWareVersionNo
+				//порядковый номер версии в отсортированном массиве
+		}
+	}
+	cost0 = system1.getCost();
+	double minRel = 2.0;
+	int minRelModuleNo;
+	System::Ware::Type minRelWareType;
+	int minRelWareNo;
+	while(cost0 < limitCost) {
+		cost = cost0;
+		double testRel;
+		for(int i = 1; i <= nModules; i++) {
+			for(k = 0; k < 2; k++) {
+				System::Ware::Type wareType = 
+					System::Ware::intToType(k);
+				int wareNo = system1.curWareVersionNo(i, wareType);
+				testRel = 
+					system1.getWareVersion(i, wareType, wareNo).rel;
+				if (testRel < minRel) {
+					minRel = testRel;
+					minRelModuleNo = i;
+					minRelWareType = wareType;
+					minRelWareNo = WareNo;
+				}
+			}
+		}
+		cost += - system1.getWareVersion(minRelModuleNo,
+			minRelWareType, minRelWareNo)
+				+ system1.getWareVersion(minRelModuleNo,
+			minRelWareType, minRelWareNo + 1);
+		
+				
+	}
+		
+		
+}
 	
 int main(int argc, const char** argv)
 {
 	System system;
 	sysGenFromXml(system, "example.xml");
+	System system1 = system;
+	sortVersions(system1);
 	system.printTest();
+	system1.printTest();
 	sysSaveToXml(system, "out.xml");
+	sysSaveToXml(system, "out2.xml");
 	return 0;
 }
