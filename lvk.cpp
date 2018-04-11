@@ -458,7 +458,7 @@ int findOptGenerous(System& system)
 			iter++;
 		}
 	}
-	//cout << "cost = " << cost << endl; //DEBUG
+	cout << "cost = " << cost << endl; //DEBUG
 	for(int i = 1; i <= nModules; i++) {
 		for(int k = 0; k < 2; k++) {
 			System::Ware::Type wareType = System::Ware::intToType(k);
@@ -468,16 +468,10 @@ int findOptGenerous(System& system)
 					sortedCurWareNo).num;
 		}
 	}
-	//sysSaveToXml(system, "out3.xml"); //DEBUG
-	//cout << "syssave worked" << endl; //DEBUG
-	//sysCombSaveToXml(system, 1, "out4.xml"); //DEBUG
-	//cout << "getCost() = " << system.getCost() << endl; //DEBUG
-	//cout << "returning iter = " << iter << endl; //DEBUG
-	//system.printTest(); //DEBUG
-	//system1.printTest(); //DEBUG
+	cout << "getCost() = " << system.getCost() << endl; //DEBUG
 	return iter;
 }
-	
+
 int main(int argc, const char** argv)
 {
 	/*
@@ -493,9 +487,17 @@ int main(int argc, const char** argv)
 	System system;
 	sysGenFromXml(system, "example.xml");
 	//sysSaveToXml(system, "out.xml");
-	int iter = findOptGenerous(system);
-	//cout << "foundopt" << endl; //DEBUG
-	sysCombSaveToXml(system, iter, "out.xml");
-	//cout << "returning 0" << endl; //DEBUG
+	/*
+	int saveLim = system.limitCost();
+	int iter;
+	char buf[64];
+	for(int lim = 170; lim <= 300; lim += 10) {
+		system.limitCost() = lim;
+		iter = findOptGenerous(system);
+		sprintf(buf, "out(%d).xml", lim);
+		sysCombSaveToXml(system, iter, buf);
+	}
+	system.limitCost = saveLim;
+	*/
 	return 0;
 }
