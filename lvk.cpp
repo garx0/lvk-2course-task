@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "./src/pugixml.hpp"
 
@@ -41,9 +42,14 @@ public:
 		double cost;
 		Ware(): rel(1.0), cost(0.0) {}
 		Ware(double a_rel, double a_cost): rel(a_rel), cost(a_cost) {}
+		bool operator< (const Ware& ware) {	return rel < ware.rel; }
+		bool operator> (const Ware& ware) { return rel > ware.rel; }
+		bool operator<= (const Ware& ware) { return rel <= ware.rel; }
+		bool operator>= (const Ware& ware) { return rel >= ware.rel; }
+		bool operator== (const Ware& ware) { return rel == ware.rel; }
+		bool operator!= (const Ware& ware) { return rel != ware.rel; }
 	};
 	//const char* const Ware::wareTypeStr[] = {"sw", "hw"};
-	//const char * const Ware::wareTypeStr[] = {"sw", "hw"};
 	struct Software : Ware {
 		friend System;
 		static const Type type = Type::SW;
@@ -63,6 +69,9 @@ private:
 		vector<Hardware> hardVersions;
 		int curSoftVersionNo;
 		int curHardVersionNo;
+	public:
+		Module(): curSoftVersionNo(0), curHardVersionNo(0) {}
+		Module(const Module& module);
 	};
 private:
 	vector<Module> modules;
@@ -73,6 +82,8 @@ private:
 	//в интерфейсе:
 	//	нумерация версий и модулей идет от 1
 public:
+	System(): limitCost_(0) {}
+	System(const System& system);
 	int getNModules() const {return modules.size();}
 	int getNWareVersions(int moduleNo, Ware::Type wareType) const;
 	const Ware& getWareVersion(int moduleNo, Ware::Type wareType, 
@@ -93,7 +104,21 @@ public:
 
 //using namespace System::Ware;
 
-int System::getNWareVersions(int moduleNo, Ware::Type wareType) const {
+System::Module::Module(const Module& module) {
+	softVersions = module.softVersions;
+	hardVersions = module.hardVersions;
+	curSoftVersionNo = module.curSoftVersionNo;
+	curHardVersionNo = module.curHardVersionNo;
+}
+
+System::System(const System& system)
+{
+	modules = system.modules;
+	limitCost_ = system.limitCost_;
+}
+
+int System::getNWareVersions(int moduleNo, Ware::Type wareType) const
+{
 	switch(wareType) {
 		case Ware::Type::SW:
 			return modules[moduleNo - 1].softVersions.size();
@@ -103,7 +128,8 @@ int System::getNWareVersions(int moduleNo, Ware::Type wareType) const {
 }
 
 const System::Ware& System::getWareVersion(int moduleNo, 
-		Ware::Type wareType, int versionNo) const {
+		Ware::Type wareType, int versionNo) const
+{
 	switch(wareType) {
 		case System::Ware::Type::SW:
 			return modules[moduleNo - 1].softVersions[versionNo - 1];
@@ -112,13 +138,15 @@ const System::Ware& System::getWareVersion(int moduleNo,
 	}
 }
 
-void System::pushBackEmptyModule() {
+void System::pushBackEmptyModule()
+{
 	modules.push_back(Module());
 	//cout << "pushed back empty module" << endl; //DEBUG
 }
 
 void System::pushBackWareVersion(int moduleNo, Ware::Type wareType, 
-		double rel, double cost) {
+		double rel, double cost)
+{
 	switch(wareType) {
 		case Ware::Type::SW:
 			modules[moduleNo - 1].softVersions.push_back(
@@ -131,7 +159,8 @@ void System::pushBackWareVersion(int moduleNo, Ware::Type wareType,
 	}
 }
 
-int& System::curWareVersionNo(int moduleNo, Ware::Type wareType) {
+int& System::curWareVersionNo(int moduleNo, Ware::Type wareType)
+{
 	switch(wareType) {
 		case Ware::Type::SW:
 			return modules[moduleNo - 1].curSoftVersionNo;
@@ -139,7 +168,9 @@ int& System::curWareVersionNo(int moduleNo, Ware::Type wareType) {
 			return modules[moduleNo - 1].curHardVersionNo;
 	}
 }
-int System::curWareVersionNo(int moduleNo, Ware::Type wareType) const {
+
+int System::curWareVersionNo(int moduleNo, Ware::Type wareType) const
+{
 	switch(wareType) {
 		case Ware::Type::SW:
 			return modules[moduleNo - 1].curSoftVersionNo;
@@ -149,12 +180,14 @@ int System::curWareVersionNo(int moduleNo, Ware::Type wareType) const {
 }
 
 const System::Ware& System::getCurWareVersion(int moduleNo, 
-		Ware::Type wareType) const {
+		Ware::Type wareType) const
+{
 	return getWareVersion(moduleNo, wareType, 
 		curWareVersionNo(moduleNo, wareType) );
 }
 	
-double System::getRel() {
+double System::getRel()
+{
 	int i;
 	double rel = 1.0;
 	int nModules = getNModules();
@@ -165,7 +198,8 @@ double System::getRel() {
 	return rel;
 }
 
-double System::getCost() {
+double System::getCost()
+{
 	int i;
 	double cost = 0.0;
 	int nModules = getNModules();
@@ -176,7 +210,8 @@ double System::getCost() {
 	return cost;
 }
 
-void sysGenFromXml(System& system, const char* filename) {
+void sysGenFromXml(System& system, const char* filename)
+{
 //предполагается, что в xml-файле все модули и версии нумеруются
 //непрерывно монотонно, начиная с 1
 	pugi::xml_document doc;
@@ -213,7 +248,8 @@ void sysGenFromXml(System& system, const char* filename) {
 	}	
 }
 
-void System::printTest() const { //DEBUG
+void System::printTest() const //DEBUG
+{
 	cout << "limitcost = " << limitCost_ << endl;
 	int n = modules.size();
 	for(int i = 0; i < n; i++) {
@@ -233,7 +269,8 @@ void System::printTest() const { //DEBUG
 	}
 }
 
-void sysSaveToXml(System& system, const char* filename) {
+void sysSaveToXml(System& system, const char* filename)
+{
 //сохраняет данные о системе и всех версиях оборудования
 	pugi::xml_document doc;
     pugi::xml_node sysNode = doc.append_child("system");
@@ -266,7 +303,8 @@ void sysSaveToXml(System& system, const char* filename) {
 }
 
 /*
-int findMinGEWareNo(const System& system, double val, int moduleNo, int wareType) {
+int findMinGEWareNo(const System& system, double val, int moduleNo, int wareType)
+{
 //find ware version with minimum rel. of those which >= val
 //in module(moduleNo)
 	int nVers;
@@ -281,12 +319,20 @@ int findMinGEWareNo(const System& system, double val, int moduleNo, int wareType
 			ans = j;
 		}
 	}
+	return ans;
 }
 */
+
 	
-//void findOptGenerous(System& system) {
+//void findOptGenerous(System& system) 
+//{
+/*
+ * a < b === должен ли a идти перед b
+ * comp = operator<=
+ */
 	
-int main(int argc, const char** argv) {
+int main(int argc, const char** argv)
+{
 	System system;
 	sysGenFromXml(system, "example.xml");
 	system.printTest();
