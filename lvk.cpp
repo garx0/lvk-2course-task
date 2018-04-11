@@ -12,7 +12,8 @@ using namespace std;
 class Exc {
 public:
 	enum class Type {
-		UNKNOWN_ERR
+		UNKNOWN_ERR,
+		BAD_ARGS
 	};
 private:
 	Type type;
@@ -123,8 +124,10 @@ public:
 	int curWareVersionNo(int moduleNo, Ware::Type wareType) const;
 	const Ware& getCurWareVersion(int moduleNo, 
 		Ware::Type wareType) const;
-	double getRel();
-	double getCost();
+	double getRel() const;
+	double getCost() const;
+	double getModuleRel(int moduleNo) const;
+	double getModuleCost(int moduleNo) const;
 	const double& limitCost() const {return limitCost_;}
 	double& limitCost() {return limitCost_;}
 	void printTest() const; //DEBUG
@@ -224,7 +227,7 @@ const System::Ware& System::getCurWareVersion(int moduleNo,
 		curWareVersionNo(moduleNo, wareType) );
 }
 	
-double System::getRel()
+double System::getRel() const
 {
 	int i;
 	double rel = 1.0;
@@ -236,7 +239,7 @@ double System::getRel()
 	return rel;
 }
 
-double System::getCost()
+double System::getCost() const
 {
 	int i;
 	double cost = 0.0;
@@ -246,6 +249,18 @@ double System::getCost()
 			getCurWareVersion(i, Ware::Type::HW).cost;
 	}
 	return cost;
+}
+
+double System::getModuleRel(int moduleNo) const
+{
+	return getCurWareVersion(moduleNo, Ware::Type::SW).rel *
+		getCurWareVersion(moduleNo, Ware::Type::HW).rel;
+}
+
+double System::getModuleCost(int moduleNo) const
+{
+	return getCurWareVersion(moduleNo, Ware::Type::SW).cost +
+		getCurWareVersion(moduleNo, Ware::Type::HW).cost;
 }
 
 void sysGenFromXml(System& system, const char* filename)
@@ -309,7 +324,7 @@ void System::printTest() const //DEBUG
 	}
 }
 
-void sysSaveToXml(System& system, const char* filename)
+void sysSaveToXml(const System& system, const char* filename)
 {
 //сохраняет данные о системе и всех версиях оборудования
 	pugi::xml_document doc;
@@ -343,7 +358,7 @@ void sysSaveToXml(System& system, const char* filename)
     doc.save_file(filename);
 }
 
-void sysCombSaveToXml(System& system, int iter, const char* filename)
+void sysCombSaveToXml(const System& system, int iter, const char* filename)
 {
 	pugi::xml_document doc;
 	pugi::xml_node sysNode = doc.append_child("system");
@@ -367,7 +382,7 @@ void sysCombSaveToXml(System& system, int iter, const char* filename)
 					moduleNode.append_child(wareTypeStr);
 			int wareNo = system.curWareVersionNo(i, wareType);
 			System::Ware ware =
-				system.getWareVersion(i, wareType, wareNo);
+				system.getWareVersion(i, wareType, wareNo); //VVVV
 			wareNode.append_attribute("num") = ware.num;
 			sprintf(buf, "%.3lf", ware.rel);
 			wareNode.append_attribute("rel") = buf;
@@ -432,7 +447,7 @@ int findOptGenerous(System& system)
 				int wareNo = system1.curWareVersionNo(i, wareType);
 				testRel = 
 					system1.getWareVersion(i, wareType, wareNo).rel;
-				if (testRel < minRel && 
+				if(testRel < minRel && 
 					wareNo < system1.getNWareVersions(i, wareType) )
 				{
 					minRel = testRel;
@@ -442,7 +457,7 @@ int findOptGenerous(System& system)
 				}
 			}
 		}
-		if (minRel > 1.0) break;
+		if(minRel > 1.0) break;
 		cost0 += - system1.getWareVersion(minRelModuleNo,
 			minRelWareType, minRelWareNo).cost
 				+ system1.getWareVersion(minRelModuleNo,
@@ -462,11 +477,108 @@ int findOptGenerous(System& system)
 			int sortedCurWareNo = system1.curWareVersionNo(i, wareType);
 			system.curWareVersionNo(i, wareType) = 
 				system1.getWareVersion(i, wareType, 
-					sortedCurWareNo).num;
+					sortedCurWareNo).num; //VVVV
 		}
 	}
 	//cout << "getCost() = " << system.getCost() << endl; //DEBUG
 	return iter;
+}
+
+void findOptGreedy_(System& system, int firstModuleNo, int lastModuleNo)
+//найти оптимальную комбинацию путем перебора комбинаций модулей
+//с номерами в заданных пределах, при фиксированных комбинациях
+//остальных модулей системы
+{
+	int nModules = system.getNModules();
+	if(firstModuleNo <= 0 || lastModuleNo <= 0) {
+		throw Exc(Exc::Type::BAD_ARGS);
+	}
+	int nModulesPart = lastModuleNo - firstModuleNo + 1;
+	if(nModulesPart > nModules || nModulesPart <= 0) {
+		throw Exc(Exc::Type::BAD_ARGS);
+	}
+	int nSoftVersions = system.getNWareVersions(firstModuleNo, 
+		System::Ware::Type::SW);
+	int nHardVersions = system.getNWareVersions(firstModuleNo, 
+		System::Ware::Type::HW);
+	double limitCost = system.limitCost();
+	double cost;
+	double rel;
+	double maxRel = 0.0;
+	System bestComb = system;
+	if(nModulesPart == 1) {
+		system.curWareVersionNo(firstModuleNo, 
+			System::Ware::Type::SW) = 1;
+		system.curWareVersionNo(firstModuleNo, 
+			System::Ware::Type::HW) = 1;
+		cost = system.getCost();
+		rel = system.getRel();
+		for(int i = 1; i < nSoftVersions; i++) {
+			for(int j = 1; j < nHardVersions; j++) {
+				if(i == 1 && j == 1) continue;
+				system.curWareVersionNo(firstModuleNo, 
+					System::Ware::Type::SW) = i;
+				system.curWareVersionNo(firstModuleNo, 
+					System::Ware::Type::HW) = j;
+				//пересчитываем cost, rel системы после смены j или i, j
+				if(j > 1) {
+					cost += system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::HW, j).cost
+						- system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::HW, j - 1).cost;
+					rel *= system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::HW, j).rel 
+						/ system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::HW, j - 1).rel;
+				} else {
+					cost += system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::SW, i).cost
+						+ system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::HW, 1).cost
+						- system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::SW, i - 1).cost
+						- system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::HW, nHardVersions).cost;
+					rel *= system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::SW, i).rel
+						* system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::HW, 1).rel
+						/ system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::SW, i - 1).rel
+						/ system.getWareVersion(firstModuleNo, 
+							System::Ware::Type::HW, nHardVersions).rel;
+				}
+				if(rel > maxRel && cost <= limitCost) {
+					maxRel = rel;
+					bestComb = system;
+				}
+			}
+		}
+		system = bestComb;
+	} else {
+		//nModulesPart > 1
+		for(int i = 1; i < nSoftVersions; i++) {
+			for(int j = 1; j < nHardVersions; j++) {
+				system.curWareVersionNo(firstModuleNo, 
+					System::Ware::Type::SW) = i;
+				system.curWareVersionNo(firstModuleNo, 
+					System::Ware::Type::HW) = j;
+				findOptGreedy_(system, firstModuleNo + 1, lastModuleNo);
+				cost = system.getCost();
+				rel = system.getRel();
+				if(rel > maxRel && cost <= limitCost) {
+					maxRel = rel;
+					bestComb = system;
+				}
+			}
+		}
+		system = bestComb;
+	}		
+}
+
+void findOptGreedy(System& system)
+{
+	findOptGreedy_( system, 1, system.getNModules() );
 }
 
 int main(int argc, const char** argv)
@@ -481,20 +593,37 @@ int main(int argc, const char** argv)
 	sysSaveToXml(system, "out.xml");
 	sysSaveToXml(system, "out2.xml");
 	*/
+	
+	/*
 	System system;
 	sysGenFromXml(system, "example.xml");
-	//sysSaveToXml(system, "out.xml");
-	/*
+	int iter = findOptGenerous(system);
+	sysCombSaveToXml(system, iter, "out(generous).xml");
+	findOptGreedy(system);
+	sysCombSaveToXml(system, 1, "out(greedy).xml");
+	*/
+	System system;
+	sysGenFromXml(system, "example.xml");
 	int saveLim = system.limitCost();
 	int iter;
 	char buf[64];
-	for(int lim = 170; lim <= 300; lim += 10) {
+	cout.precision(3);
+	for(int lim = 150; lim <= 310; lim += 10) {
 		system.limitCost() = lim;
+		
 		iter = findOptGenerous(system);
-		sprintf(buf, "out(%d).xml", lim);
+		cout << "rel(" << lim << ", generous) = " << 
+			system.getRel() << endl;
+		sprintf(buf, "out(%d)(generous).xml", lim);
 		sysCombSaveToXml(system, iter, buf);
+		
+		findOptGreedy(system);
+		cout << "rel(" << lim << ",   greedy) = " << 
+			system.getRel() << endl << endl;
+		sprintf(buf, "out(%d)(greedy).xml", lim);
+		sysCombSaveToXml(system, 1, buf);
 	}
-	system.limitCost = saveLim;
-	*/
+	system.limitCost() = saveLim;
+	
 	return 0;
 }
