@@ -329,15 +329,12 @@ void sysSaveToXml(System& system, const char* filename)
 			for(int j = 1; j <= nWare; j++) {
 				pugi::xml_node wareNode = 
 					moduleNode.append_child(wareTypeStr);
-				//System::Ware ware = 
-				//	system.getWareVersion(i, wareType, j); //VVVV
-				wareNode.append_attribute("num") = 
-					system.getWareVersion(i, wareType, j).num; //VVVV
-				sprintf(buf, "%.3lf", 
-					system.getWareVersion(i, wareType, j).rel); //VVVV
+				System::Ware ware = 
+					system.getWareVersion(i, wareType, j);
+				wareNode.append_attribute("num") = ware.num;
+				sprintf(buf, "%.3lf", ware.rel);
 				wareNode.append_attribute("rel") = buf;
-				sprintf(buf, "%.3g", 
-					system.getWareVersion(i, wareType, j).cost); //VVVV
+				sprintf(buf, "%.3g", ware.cost);
 				wareNode.append_attribute("cost") = buf;
 			}
 		}
@@ -458,7 +455,7 @@ int findOptGenerous(System& system)
 			iter++;
 		}
 	}
-	cout << "cost = " << cost << endl; //DEBUG
+	//cout << "cost = " << cost << endl; //DEBUG
 	for(int i = 1; i <= nModules; i++) {
 		for(int k = 0; k < 2; k++) {
 			System::Ware::Type wareType = System::Ware::intToType(k);
@@ -468,7 +465,7 @@ int findOptGenerous(System& system)
 					sortedCurWareNo).num;
 		}
 	}
-	cout << "getCost() = " << system.getCost() << endl; //DEBUG
+	//cout << "getCost() = " << system.getCost() << endl; //DEBUG
 	return iter;
 }
 
