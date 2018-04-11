@@ -72,6 +72,7 @@ private:
 		vector<Hardware> hardVersions;
 		int curSoftVersionNo;
 		int curHardVersionNo;
+		friend void sortVersions(System& system);
 	public:
 		Module(): curSoftVersionNo(0), curHardVersionNo(0) {}
 		Module(const Module& module);
@@ -265,13 +266,15 @@ void System::printTest() const //DEBUG
 		for(int j = 0; j < nSoft; j++) {
 			cout << "	soft " << j << ": rel = " <<
 				modules[i].softVersions[j].rel << ", cost = " <<
-				modules[i].softVersions[j].cost << endl;
+				modules[i].softVersions[j].cost << ", num = " <<
+				modules[i].softVersions[j].num << endl;
 		}
 		int nHard = modules[i].hardVersions.size();
 		for(int j = 0; j < nHard; j++) {
 			cout << "	hard " << j << ": rel = " <<
 				modules[i].hardVersions[j].rel << ", cost = " <<
-				modules[i].hardVersions[j].cost << endl;
+				modules[i].hardVersions[j].cost << ", num = " <<
+				modules[i].hardVersions[j].num << endl;
 		}
 	}
 }
