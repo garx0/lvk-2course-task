@@ -40,8 +40,10 @@ public:
 		friend System;
 		double rel;
 		double cost;
-		Ware(): rel(1.0), cost(0.0) {}
-		Ware(double a_rel, double a_cost): rel(a_rel), cost(a_cost) {}
+		int num;
+		Ware(): rel(1.0), cost(0.0), num(0) {}
+		Ware(double a_rel, double a_cost, int a_num): 
+			rel(a_rel), cost(a_cost), num(a_num) {}
 		bool operator< (const Ware& ware) {	return rel < ware.rel; }
 		bool operator> (const Ware& ware) { return rel > ware.rel; }
 		bool operator<= (const Ware& ware) { return rel <= ware.rel; }
@@ -54,13 +56,14 @@ public:
 		friend System;
 		static const Type type = Type::SW;
 		Software(): Ware() {}
-		Software(double rel, double cost): Ware(rel, cost) {}
+		Software(double rel, double cost, int num):
+			Ware(rel, cost, num) {}
 	};
 	struct Hardware : Ware {
 		friend System;
 		static const Type type = Type::HW;
 		Hardware(): Ware() {}
-		Hardware(double rel, double cost): Ware(rel, cost) {}
+		Hardware(double rel, double cost, int num): Ware(rel, cost, num) {}
 	};
 private:
 	class Module {
@@ -81,6 +84,7 @@ private:
 	// 	в полях cur~~~~VersionNo_ - от 1
 	//в интерфейсе:
 	//	нумерация версий и модулей идет от 1
+	friend void sortVersions(System& system);
 public:
 	System(): limitCost_(0) {}
 	System(const System& system);
@@ -90,7 +94,7 @@ public:
 		int versionNo) const;
 	void pushBackEmptyModule();
 	void pushBackWareVersion(int moduleNo, Ware::Type wareType, 
-		double rel, double cost);
+		double rel, double cost, int num = 0);
 	int& curWareVersionNo(int moduleNo, Ware::Type wareType);
 	int curWareVersionNo(int moduleNo, Ware::Type wareType) const;
 	const Ware& getCurWareVersion(int moduleNo, 
@@ -145,16 +149,19 @@ void System::pushBackEmptyModule()
 }
 
 void System::pushBackWareVersion(int moduleNo, Ware::Type wareType, 
-		double rel, double cost)
+		double rel, double cost, int num)
 {
+	if(num == 0) {
+		num = getNWareVersions(moduleNo, wareType) + 1;
+	}
 	switch(wareType) {
 		case Ware::Type::SW:
 			modules[moduleNo - 1].softVersions.push_back(
-				Software(rel, cost) );
+				Software(rel, cost, num) );
 			break;
 		case Ware::Type::HW:
 			modules[moduleNo - 1].hardVersions.push_back(
-				Hardware(rel, cost) );
+				Hardware(rel, cost, num) );
 			break;
 	}
 }
@@ -323,7 +330,25 @@ int findMinGEWareNo(const System& system, double val, int moduleNo, int wareType
 }
 */
 
-	
+void sortVersions(System& system)
+{
+	int nModules = system.getNModules();
+	for(int i = 1; i <= nModules; i++) {
+		/*
+		for(int k = 0; k < 2; k++) {
+			System::Ware::Type wareType = System::Ware::intToType(k);
+			//int nWare = system.getNWareVersions(i, wareType);
+		}
+		*/
+		sort(system.modules[i].softVersions.begin(),
+			system.modules[i].softVersions.end() );
+		//третий арг. - operator< (по умолч.)
+		sort(system.modules[i].hardVersions.begin(),
+			system.modules[i].hardVersions.end() );
+		//третий арг. - operator< (по умолч.)
+	}
+}
+
 //void findOptGenerous(System& system) 
 //{
 /*
