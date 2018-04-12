@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
 
 #include "./src/pugixml.hpp"
 
@@ -263,7 +264,33 @@ double System::getModuleCost(int moduleNo) const
 		getCurWareVersion(moduleNo, Ware::Type::HW).cost;
 }
 
-void sysGenFromXml(System& system, const char* filename)
+void sysGen(System& system) //V add many parameters later
+{
+	//будем генерировать стоимость по надежности, предполагая,
+	//что зависимость стоимости от надежности выпукла вниз, 
+	//при этом при генерации будут случайные небольшие отклонения 
+	//от этой зависимости
+	
+}
+
+void genCostCurve(double rel, double slope)
+{
+	if(slope >= 1.0 || slope <= -1.0) throw Exc(Exc::Type::BAD_ARGS;
+	a = abs(slope);
+	double coef;
+	coef = ( 1/(1/a - rel) - a ) / 1/(1/a - 1) - a);
+	//V проверить, то ли получилось
+	//coef in [0,1]
+	return slope > 0 ? coef : 1 - coef;
+}
+	
+void genCost(double rel, double slope, double cost90, int randomness, int seed)
+{
+	double cost100 = cost90 / genCostCurve(0.9, slope);
+	// cost100 : genCostCurve(0.9, slope) * cost100 = cost90;
+	//...
+}  
+void sysReadFromXml(System& system, const char* filename)
 {
 //предполагается, что в xml-файле все модули и версии нумеруются
 //непрерывно монотонно, начиная с 1
@@ -585,7 +612,7 @@ int main(int argc, const char** argv)
 {
 	/*
 	System system;
-	sysGenFromXml(system, "example.xml");
+	sysReadFromXml(system, "example.xml");
 	System system1 = system;
 	sortVersions(system1);
 	system.printTest();
@@ -596,14 +623,14 @@ int main(int argc, const char** argv)
 	
 	/*
 	System system;
-	sysGenFromXml(system, "example.xml");
+	sysReadFromXml(system, "example.xml");
 	int iter = findOptGenerous(system);
 	sysCombSaveToXml(system, iter, "out(generous).xml");
 	findOptGreedy(system);
 	sysCombSaveToXml(system, 1, "out(greedy).xml");
 	*/
 	System system;
-	sysGenFromXml(system, "example.xml");
+	sysReadFromXml(system, "example.xml");
 	int saveLim = system.limitCost();
 	int iter;
 	char buf[64];
