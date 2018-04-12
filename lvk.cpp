@@ -270,9 +270,11 @@ int randNum(int a, int b)
 	return a + rand() % (b - a);
 }
 
-int randCoef(int divisions = 16384)
+double randCoef(int divisions = 16384)
 {
-	double res = randNum(0, divisions) / divisions;
+	if(divisions <= 0) throw Exc(Exc::Type::BAD_ARGS);
+	double res = randNum(0, divisions);
+	res /= divisions;
 	return res;
 }
 
@@ -701,18 +703,20 @@ void testProg2()
 void testProg3()
 {
 	System system;
-	sysGen(system, 10, 5, 7, 300, 0.8, 10.0, 0.0);
+	sysGen(system, 3, 5, 7, 300, 0.8, 10.0, 0.0);
 	sysSaveToXml(system, "out1.xml");
 	sortVersions(system);
 	sysSaveToXml(system, "out2.xml");
 	int iter = findOptGenerous(system);
-	sysCombSaveToXml(system, iter, "out generous");
-	//findOptGreedy(system);
-	//sysCombSaveToXml(system, 1, "out greedy");
+	sysCombSaveToXml(system, iter, "out generous.xml");
+	//generous работает неправильно!
+	findOptGreedy(system);
+	sysCombSaveToXml(system, 1, "out greedy.xml");
 }
 
 int main(int argc, const char** argv)
 {
+	srand(10);
 	/*
 	System system;
 	sysReadFromXml(system, "example.xml");
