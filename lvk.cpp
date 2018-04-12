@@ -264,32 +264,85 @@ double System::getModuleCost(int moduleNo) const
 		getCurWareVersion(moduleNo, Ware::Type::HW).cost;
 }
 
-void sysGen(System& system) //V add many parameters later
+int randNum(int a, int b)
 {
-	//будем генерировать стоимость по надежности, предполагая,
-	//что зависимость стоимости от надежности выпукла вниз, 
-	//при этом при генерации будут случайные небольшие отклонения 
-	//от этой зависимости
-	
+	if(a == b) return a;
+	return a + rand() % (b - a);
 }
 
-void genCostCurve(double rel, double slope)
+int randCoef(int divisions = 16384)
 {
-	if(slope >= 1.0 || slope <= -1.0) throw Exc(Exc::Type::BAD_ARGS;
-	a = abs(slope);
+	double res = randNum(0, divisions) / divisions;
+	return res;
+}
+
+double genCostCurve(double rel, double slope)
+//slope in (-1, 1), slope != +-1
+//slope = 0    => линейная зависимость
+//slope -> 1   => гиперболическая зависимость, выпукл вниз,
+//	крутизна в окрестности rel = 1 растет
+//slope -> -1  => гиперболическая зависимость, выпукл вверх,
+//	крутизна в окрестности rel = 0 растет
+{
+	if(rel < 0.0 || rel > 1.0) throw Exc(Exc::Type::BAD_ARGS);
+	if(slope >= 1.0 || slope <= -1.0) throw Exc(Exc::Type::BAD_ARGS);
+	if(rel == 0.0) return 0.0;
+	if(rel == 1.0) return 1.0;
+	if(slope == 0.0) return rel;
+	double a = abs(slope);
 	double coef;
-	coef = ( 1/(1/a - rel) - a ) / 1/(1/a - 1) - a);
+	coef = ( 1/(1/a - rel) - a ) / ( 1/(1/a - 1) - a );
 	//V проверить, то ли получилось
 	//coef in [0,1]
+	if(coef >= 1.0) {cout << "coef >= 1" << endl; return 1.0;}
+	if(coef <= 0.0) {cout << "coef <= 1" << endl; return 0.0;}
 	return slope > 0 ? coef : 1 - coef;
 }
-	
-void genCost(double rel, double slope, double cost90, int randomness, int seed)
+
+double genCost(double rel, double slope, double cost90, double randomness)
+//cost90 - стоимость ПО/оборуд. с надежностью 0.9 при randomness = 0;
 {
+	if(rel < 0.0 || rel > 1.0 || slope >= 1.0 || slope <= -1.0 ||
+			cost90 < 0.0 || randomness < 0.0 || randomness > 1.0) {
+		throw Exc(Exc::Type::BAD_ARGS);
+	}
+	if(cost90 == 0.0) return 0.0;
 	double cost100 = cost90 / genCostCurve(0.9, slope);
-	// cost100 : genCostCurve(0.9, slope) * cost100 = cost90;
-	//...
-}  
+	//cost100 is such that: genCostCurve(0.9, slope) * cost100 = cost90;
+	double dev = randomness * randCoef();
+	double curveNoised = (genCostCurve(rel, slope) + dev) / 2;
+	if(curveNoised < 0) curveNoised = -curveNoised;
+	return cost100 * curveNoised;
+}
+
+void sysGen(System& system, int nModules, int nSoftVersions, 
+	int nHardVersions, double limitCost, double minRel = 0.8, double cost90 = 10.0, 
+	double randomness = 0.2, double costRelSlope = 0.98)
+{
+	system.limitCost() = limitCost;
+	double rel, cost;
+	if(nModules <= 0 || nSoftVersions <= 0 || nHardVersions <= 0 ||
+			minRel < 0.0 || minRel > 1.0 || cost90 < 0.0 ||
+			randomness < 0.0 || randomness > 1.0 || 
+			costRelSlope < -1.0 || costRelSlope > 1.0) {
+		throw Exc(Exc::Type::BAD_ARGS);
+	} 
+	for(int i = 1; i <= nModules; i++) {
+		system.pushBackEmptyModule();
+    	for(int k = 0; k < 2; k++) {
+			System::Ware::Type wareType = System::Ware::intToType(k);
+			int nWare = wareType ==
+				System::Ware::Type::SW ? nSoftVersions : nHardVersions;
+			//nWare += randNum(-2, 2); if(nWare <= 0) {nWare = 1;}
+			for(int j = 1; j < nWare; j++) {
+				rel = minRel + (1 - minRel) * randCoef();
+				cost = genCost(rel, costRelSlope, cost90, randomness);
+				system.pushBackWareVersion(i, wareType, rel, cost);
+			}
+		}
+	}
+}
+
 void sysReadFromXml(System& system, const char* filename)
 {
 //предполагается, что в xml-файле все модули и версии нумеруются
@@ -608,27 +661,19 @@ void findOptGreedy(System& system)
 	findOptGreedy_( system, 1, system.getNModules() );
 }
 
-int main(int argc, const char** argv)
+void testProg1(const char* inFile, const char* outFileGenerous, 
+	const char* outFileGreedy)
 {
-	/*
 	System system;
-	sysReadFromXml(system, "example.xml");
-	System system1 = system;
-	sortVersions(system1);
-	system.printTest();
-	system1.printTest();
-	sysSaveToXml(system, "out.xml");
-	sysSaveToXml(system, "out2.xml");
-	*/
-	
-	/*
-	System system;
-	sysReadFromXml(system, "example.xml");
+	sysReadFromXml(system, inFile);
 	int iter = findOptGenerous(system);
-	sysCombSaveToXml(system, iter, "out(generous).xml");
+	sysCombSaveToXml(system, iter, outFileGenerous);
 	findOptGreedy(system);
-	sysCombSaveToXml(system, 1, "out(greedy).xml");
-	*/
+	sysCombSaveToXml(system, 1, outFileGreedy);
+}
+
+void testProg2()
+{
 	System system;
 	sysReadFromXml(system, "example.xml");
 	int saveLim = system.limitCost();
@@ -651,6 +696,34 @@ int main(int argc, const char** argv)
 		sysCombSaveToXml(system, 1, buf);
 	}
 	system.limitCost() = saveLim;
-	
+}
+
+void testProg3()
+{
+	System system;
+	sysGen(system, 10, 5, 7, 300, 0.8, 10.0, 0.0);
+	sysSaveToXml(system, "out1.xml");
+	sortVersions(system);
+	sysSaveToXml(system, "out2.xml");
+	int iter = findOptGenerous(system);
+	sysCombSaveToXml(system, iter, "out generous");
+	//findOptGreedy(system);
+	//sysCombSaveToXml(system, 1, "out greedy");
+}
+
+int main(int argc, const char** argv)
+{
+	/*
+	System system;
+	sysReadFromXml(system, "example.xml");
+	System system1 = system;
+	sortVersions(system1);
+	system.printTest();
+	system1.printTest();
+	sysSaveToXml(system, "out.xml");
+	sysSaveToXml(system, "out2.xml");
+	*/
+	//testProg1("example.xml", "out(generous).xml", "out(greedy).xml");
+	testProg3();
 	return 0;
 }
