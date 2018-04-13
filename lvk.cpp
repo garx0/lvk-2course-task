@@ -28,52 +28,53 @@ public:
 	PugiXmlExc(pugi::xml_parse_result a_result): result(a_result) {}
 };
 
+
+struct Ware {
+	enum class Type { SW, HW };
+	//static char* const wareTypeStr[] = {"sw", "hw"};
+	static int typeToInt(Type type) {
+		return static_cast<int>(type);
+	}
+	static Type intToType(int num) {
+		if (num <= 0) {return Type::SW;} else {return Type::HW;}
+	}
+	double rel;
+	double cost;
+	int num;
+	Ware(): rel(1.0), cost(0.0), num(1) {}
+	Ware(double a_rel, double a_cost, int a_num): 
+		rel(a_rel), cost(a_cost), num(a_num) {}
+	bool operator< (const Ware& ware) const
+		{ return rel < ware.rel; }
+	bool operator> (const Ware& ware) const
+		{ return rel > ware.rel; }
+	bool operator<= (const Ware& ware) const
+		{ return rel <= ware.rel; }
+	bool operator>= (const Ware& ware) const
+		{ return rel >= ware.rel; }
+	bool operator== (const Ware& ware) const
+		{ return rel == ware.rel; }
+	bool operator!= (const Ware& ware) const
+		{ return rel != ware.rel; }
+};
+
+//const char* const Ware::wareTypeStr[] = {"sw", "hw"};
+struct Software : Ware {
+	static const Type type = Type::SW;
+	Software(): Ware() {}
+	Software(double rel, double cost, int num):
+		Ware(rel, cost, num) {}
+};
+struct Hardware : Ware {
+	static const Type type = Type::HW;
+	Hardware(): Ware() {}
+	Hardware(double rel, double cost, int num): 
+		Ware(rel, cost, num) {}
+};
+
 class System {
 public:
-	struct Ware {
-		enum class Type { SW, HW };
-		//static char* const wareTypeStr[] = {"sw", "hw"};
-		static int typeToInt(Type type) {
-			return static_cast<int>(type);
-		}
-		static Type intToType(int num) {
-			if (num <= 0) {return Type::SW;} else {return Type::HW;}
-		}
-		friend System;
-		double rel;
-		double cost;
-		int num;
-		Ware(): rel(1.0), cost(0.0), num(1) {}
-		Ware(double a_rel, double a_cost, int a_num): 
-			rel(a_rel), cost(a_cost), num(a_num) {}
-		bool operator< (const Ware& ware) const
-			{ return rel < ware.rel; }
-		bool operator> (const Ware& ware) const
-			{ return rel > ware.rel; }
-		bool operator<= (const Ware& ware) const
-			{ return rel <= ware.rel; }
-		bool operator>= (const Ware& ware) const
-			{ return rel >= ware.rel; }
-		bool operator== (const Ware& ware) const
-			{ return rel == ware.rel; }
-		bool operator!= (const Ware& ware) const
-			{ return rel != ware.rel; }
-	};
-	//const char* const Ware::wareTypeStr[] = {"sw", "hw"};
-	struct Software : Ware {
-		friend System;
-		static const Type type = Type::SW;
-		Software(): Ware() {}
-		Software(double rel, double cost, int num):
-			Ware(rel, cost, num) {}
-	};
-	struct Hardware : Ware {
-		friend System;
-		static const Type type = Type::HW;
-		Hardware(): Ware() {}
-		Hardware(double rel, double cost, int num): 
-			Ware(rel, cost, num) {}
-	};
+
 private:
 	class Module {
 		friend System;
@@ -131,10 +132,11 @@ public:
 	double getModuleCost(int moduleNo) const;
 	const double& limitCost() const {return limitCost_;}
 	double& limitCost() {return limitCost_;}
+	void clear();
 	void printTest() const; //DEBUG
 };
 
-//using namespace System::Ware;
+//using namespace Ware;
 
 System::Module::Module(const Module& module) {
 	//cout << "KK mod" << endl; //DEBUG
@@ -163,14 +165,14 @@ int System::getNWareVersions(int moduleNo, Ware::Type wareType) const
 	}
 }
 
-const System::Ware& System::getWareVersion(int moduleNo, 
+const Ware& System::getWareVersion(int moduleNo, 
 		Ware::Type wareType, int versionNo) const
 {
 	//cout << "____" << versionNo - 1 << endl; //DEBUG
 	switch(wareType) {
-		case System::Ware::Type::SW:
+		case Ware::Type::SW:
 			return modules[moduleNo - 1].softVersions[versionNo - 1];
-		case System::Ware::Type::HW:
+		case Ware::Type::HW:
 			return modules[moduleNo - 1].hardVersions[versionNo - 1];
 	}
 }
@@ -221,7 +223,7 @@ int System::curWareVersionNo(int moduleNo, Ware::Type wareType) const
 	}
 }
 
-const System::Ware& System::getCurWareVersion(int moduleNo, 
+const Ware& System::getCurWareVersion(int moduleNo, 
 		Ware::Type wareType) const
 {
 	return getWareVersion(moduleNo, wareType, 
@@ -262,6 +264,16 @@ double System::getModuleCost(int moduleNo) const
 {
 	return getCurWareVersion(moduleNo, Ware::Type::SW).cost +
 		getCurWareVersion(moduleNo, Ware::Type::HW).cost;
+}
+
+void System::clear()
+{
+	int n = modules.size();
+	for(int i = 0; i < n; i++) {
+		modules[i].softVersions.clear();
+		modules[i].hardVersions.clear();
+	}
+	modules.clear();
 }
 
 int randNum(int a, int b)
@@ -311,34 +323,35 @@ double genCost(double rel, double slope, double cost90, double randomness)
 	if(cost90 == 0.0) return 0.0;
 	double cost100 = cost90 / genCostCurve(0.9, slope);
 	//cost100 is such that: genCostCurve(0.9, slope) * cost100 = cost90;
-	double dev = randomness * randCoef();
-	double curveNoised = (genCostCurve(rel, slope) + dev) / 2;
+	double dev = randomness * (randCoef() - 0.5);
+	double curveNoised = genCostCurve(rel, slope) + dev;
 	if(curveNoised < 0) curveNoised = -curveNoised;
 	return cost100 * curveNoised;
 }
 
 void sysGen(System& system, int nModules, int nSoftVersions, 
-	int nHardVersions, double limitCost, double minRel = 0.8, double cost90 = 10.0, 
-	double randomness = 0.2, double costRelSlope = 0.98)
+	int nHardVersions, double limitCost, double minRel = 0.8, double cost90 = 15.0, 
+	double costRandomness = 0.2, double costRelSlope = 0.97)
 {
+	system.clear();
 	system.limitCost() = limitCost;
 	double rel, cost;
 	if(nModules <= 0 || nSoftVersions <= 0 || nHardVersions <= 0 ||
 			minRel < 0.0 || minRel > 1.0 || cost90 < 0.0 ||
-			randomness < 0.0 || randomness > 1.0 || 
+			costRandomness < 0.0 || costRandomness > 1.0 || 
 			costRelSlope < -1.0 || costRelSlope > 1.0) {
 		throw Exc(Exc::Type::BAD_ARGS);
 	} 
 	for(int i = 1; i <= nModules; i++) {
 		system.pushBackEmptyModule();
     	for(int k = 0; k < 2; k++) {
-			System::Ware::Type wareType = System::Ware::intToType(k);
+			Ware::Type wareType = Ware::intToType(k);
 			int nWare = wareType ==
-				System::Ware::Type::SW ? nSoftVersions : nHardVersions;
+				Ware::Type::SW ? nSoftVersions : nHardVersions;
 			//nWare += randNum(-2, 2); if(nWare <= 0) {nWare = 1;}
 			for(int j = 1; j < nWare; j++) {
 				rel = minRel + (1 - minRel) * randCoef();
-				cost = genCost(rel, costRelSlope, cost90, randomness);
+				cost = genCost(rel, costRelSlope, cost90, costRandomness);
 				system.pushBackWareVersion(i, wareType, rel, cost);
 			}
 		}
@@ -349,6 +362,7 @@ void sysReadFromXml(System& system, const char* filename)
 {
 //предполагается, что в xml-файле все модули и версии нумеруются
 //непрерывно монотонно, начиная с 1
+	system.clear();
 	pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file(filename);
     //cout << "Load result: " << result.description() << endl; //DEBUG
@@ -366,7 +380,7 @@ void sysReadFromXml(System& system, const char* filename)
 		system.pushBackEmptyModule();
 		//cout << "in i-cycle\n"; //DEBUG
 		for(int k = 0; k < 2; k++) {
-			System::Ware::Type wareType = System::Ware::intToType(k);
+			Ware::Type wareType = Ware::intToType(k);
 			const char* wareTypeStr = k == 0 ? "sw" : "hw"; // V replace with static
 			for(pugi::xml_node jNode = iNode.child(wareTypeStr);
 				jNode;
@@ -419,14 +433,14 @@ void sysSaveToXml(const System& system, const char* filename)
 		pugi::xml_node moduleNode = sysNode.append_child("module");
 		moduleNode.append_attribute("num") = i;
 		for(int k = 0; k < 2; k++) {
-			System::Ware::Type wareType = System::Ware::intToType(k);
+			Ware::Type wareType = Ware::intToType(k);
 			const char* wareTypeStr = 
-				wareType == System::Ware::Type::SW ? "sw" : "hw"; //V replace with static
+				wareType == Ware::Type::SW ? "sw" : "hw"; //V replace with static
 			int nWare = system.getNWareVersions(i, wareType);
 			for(int j = 1; j <= nWare; j++) {
 				pugi::xml_node wareNode = 
 					moduleNode.append_child(wareTypeStr);
-				System::Ware ware = 
+				Ware ware = 
 					system.getWareVersion(i, wareType, j);
 				wareNode.append_attribute("num") = ware.num;
 				sprintf(buf, "%.3lf", ware.rel);
@@ -457,14 +471,13 @@ void sysCombSaveToXml(const System& system, int iter, const char* filename)
 		pugi::xml_node moduleNode = sysNode.append_child("module");
 		moduleNode.append_attribute("num") = i;
 		for(int k = 0; k < 2; k++) {
-			System::Ware::Type wareType = System::Ware::intToType(k);
+			Ware::Type wareType = Ware::intToType(k);
 			const char* wareTypeStr = 
-				wareType == System::Ware::Type::SW ? "sw" : "hw"; //V...
+				wareType == Ware::Type::SW ? "sw" : "hw"; //V...
 			pugi::xml_node wareNode = 
 					moduleNode.append_child(wareTypeStr);
-			int wareNo = system.curWareVersionNo(i, wareType);
-			System::Ware ware =
-				system.getWareVersion(i, wareType, wareNo); //VVVV
+			Ware ware =
+				system.getCurWareVersion(i, wareType);
 			wareNode.append_attribute("num") = ware.num;
 			sprintf(buf, "%.3lf", ware.rel);
 			wareNode.append_attribute("rel") = buf;
@@ -476,6 +489,10 @@ void sysCombSaveToXml(const System& system, int iter, const char* filename)
 }
 
 void sortVersions(System& system)
+//на получившейся системе могут некорректно работать,
+//например, алгоритмы поиска оптимальной комбинации,
+//т.к. в ней не совпадают порядковые номера версий
+//(в плане интерфейса) и поля num версий
 {
 	//System system1 = system; //DEBUG
  	int nModules = system.getNModules();
@@ -489,8 +506,14 @@ void sortVersions(System& system)
 	}
 }
 
-int findOptGenerous(System& system) 
+int findOptGenerous(System& system)
 //returns number of iterations
+//во входной системе должны совпадать порядковые номера версий
+//(в плане интерфейса) и поля num версий, иначе алгоритм работает
+//некорректно
+//этим условиям удовлетворяет любая система, созданная с помощью
+//интерфейса класса System.
+//не удовлетворяет - система, прошедшая через функцию sortVersions
 {
 /*
  * a < b === должен ли a идти перед b
@@ -503,7 +526,7 @@ int findOptGenerous(System& system)
 	int nModules = system.getNModules();
 	for(int i = 1; i <= nModules; i++) {
 		for(int k = 0; k < 2; k++) {
-			System::Ware::Type wareType = System::Ware::intToType(k);
+			Ware::Type wareType = Ware::intToType(k);
 			system1.curWareVersionNo(i, wareType) = 1;
 				//1, т.к. берем наименее надежную
 				//пока храним в качестве curWareVersionNo
@@ -513,19 +536,18 @@ int findOptGenerous(System& system)
 	cost0 = system1.getCost();
 	double minRel;
 	int minRelModuleNo;
-	System::Ware::Type minRelWareType;
+	Ware::Type minRelWareType;
 	int minRelWareNo;
 	int iter = 1;
 	bool ok = cost0 <= limitCost;
 	while(ok) {
-		//cout << "while" << endl; //DEBUG
 		cost = cost0;
 		double testRel;
 		minRel = 2.0;
 		for(int i = 1; i <= nModules; i++) {
 			for(int k = 0; k < 2; k++) {
-				System::Ware::Type wareType = 
-					System::Ware::intToType(k);
+				Ware::Type wareType = 
+					Ware::intToType(k);
 				int wareNo = system1.curWareVersionNo(i, wareType);
 				testRel = 
 					system1.getWareVersion(i, wareType, wareNo).rel;
@@ -552,17 +574,14 @@ int findOptGenerous(System& system)
 			iter++;
 		}
 	}
-	//cout << "cost = " << cost << endl; //DEBUG
 	for(int i = 1; i <= nModules; i++) {
 		for(int k = 0; k < 2; k++) {
-			System::Ware::Type wareType = System::Ware::intToType(k);
+			Ware::Type wareType = Ware::intToType(k);
 			int sortedCurWareNo = system1.curWareVersionNo(i, wareType);
 			system.curWareVersionNo(i, wareType) = 
-				system1.getWareVersion(i, wareType, 
-					sortedCurWareNo).num; //VVVV
+				system1.getCurWareVersion(i, wareType).num;
 		}
 	}
-	//cout << "getCost() = " << system.getCost() << endl; //DEBUG
 	return iter;
 }
 
@@ -580,9 +599,9 @@ void findOptGreedy_(System& system, int firstModuleNo, int lastModuleNo)
 		throw Exc(Exc::Type::BAD_ARGS);
 	}
 	int nSoftVersions = system.getNWareVersions(firstModuleNo, 
-		System::Ware::Type::SW);
+		Ware::Type::SW);
 	int nHardVersions = system.getNWareVersions(firstModuleNo, 
-		System::Ware::Type::HW);
+		Ware::Type::HW);
 	double limitCost = system.limitCost();
 	double cost;
 	double rel;
@@ -590,45 +609,45 @@ void findOptGreedy_(System& system, int firstModuleNo, int lastModuleNo)
 	System bestComb = system;
 	if(nModulesPart == 1) {
 		system.curWareVersionNo(firstModuleNo, 
-			System::Ware::Type::SW) = 1;
+			Ware::Type::SW) = 1;
 		system.curWareVersionNo(firstModuleNo, 
-			System::Ware::Type::HW) = 1;
+			Ware::Type::HW) = 1;
 		cost = system.getCost();
 		rel = system.getRel();
-		for(int i = 1; i < nSoftVersions; i++) {
-			for(int j = 1; j < nHardVersions; j++) {
+		for(int i = 1; i <= nSoftVersions; i++) {
+			for(int j = 1; j <= nHardVersions; j++) {
 				if(i == 1 && j == 1) continue;
 				system.curWareVersionNo(firstModuleNo, 
-					System::Ware::Type::SW) = i;
+					Ware::Type::SW) = i;
 				system.curWareVersionNo(firstModuleNo, 
-					System::Ware::Type::HW) = j;
+					Ware::Type::HW) = j;
 				//пересчитываем cost, rel системы после смены j или i, j
 				if(j > 1) {
 					cost += system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::HW, j).cost
+							Ware::Type::HW, j).cost
 						- system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::HW, j - 1).cost;
+							Ware::Type::HW, j - 1).cost;
 					rel *= system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::HW, j).rel 
+							Ware::Type::HW, j).rel 
 						/ system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::HW, j - 1).rel;
+							Ware::Type::HW, j - 1).rel;
 				} else {
 					cost += system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::SW, i).cost
+							Ware::Type::SW, i).cost
 						+ system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::HW, 1).cost
+							Ware::Type::HW, 1).cost
 						- system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::SW, i - 1).cost
+							Ware::Type::SW, i - 1).cost
 						- system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::HW, nHardVersions).cost;
+							Ware::Type::HW, nHardVersions).cost;
 					rel *= system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::SW, i).rel
+							Ware::Type::SW, i).rel
 						* system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::HW, 1).rel
+							Ware::Type::HW, 1).rel
 						/ system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::SW, i - 1).rel
+							Ware::Type::SW, i - 1).rel
 						/ system.getWareVersion(firstModuleNo, 
-							System::Ware::Type::HW, nHardVersions).rel;
+							Ware::Type::HW, nHardVersions).rel;
 				}
 				if(rel > maxRel && cost <= limitCost) {
 					maxRel = rel;
@@ -639,12 +658,12 @@ void findOptGreedy_(System& system, int firstModuleNo, int lastModuleNo)
 		system = bestComb;
 	} else {
 		//nModulesPart > 1
-		for(int i = 1; i < nSoftVersions; i++) {
-			for(int j = 1; j < nHardVersions; j++) {
+		for(int i = 1; i <= nSoftVersions; i++) {
+			for(int j = 1; j <= nHardVersions; j++) {
 				system.curWareVersionNo(firstModuleNo, 
-					System::Ware::Type::SW) = i;
+					Ware::Type::SW) = i;
 				system.curWareVersionNo(firstModuleNo, 
-					System::Ware::Type::HW) = j;
+					Ware::Type::HW) = j;
 				findOptGreedy_(system, firstModuleNo + 1, lastModuleNo);
 				cost = system.getCost();
 				rel = system.getRel();
@@ -703,15 +722,40 @@ void testProg2()
 void testProg3()
 {
 	System system;
-	sysGen(system, 3, 5, 7, 300, 0.8, 10.0, 0.0);
+	sysGen(system, 5, 5, 7, 300, 0.75, 15.0, 0.0);
+	system.printTest();
 	sysSaveToXml(system, "out1.xml");
-	sortVersions(system);
-	sysSaveToXml(system, "out2.xml");
-	int iter = findOptGenerous(system);
-	sysCombSaveToXml(system, iter, "out generous.xml");
-	//generous работает неправильно!
-	findOptGreedy(system);
-	sysCombSaveToXml(system, 1, "out greedy.xml");
+	System system1 = system;
+	sortVersions(system1);
+	sysSaveToXml(system1, "out2.xml");
+	system1.printTest();
+	char buf[64];
+	for(int lim = 230; lim > 0; lim -= 10) {
+		system.limitCost() = lim;
+		
+		int iter = findOptGenerous(system);
+		cout << "rel(" << lim << ", generous) = " << 
+			system.getRel() << endl;
+		sprintf(buf, "out(%d)(generous).xml", lim);
+		sysCombSaveToXml(system, iter, buf);
+		
+		findOptGreedy(system);
+		cout << "rel(" << lim << ",   greedy) = " << 
+			system.getRel() << endl << endl;
+		sprintf(buf, "out(%d)(greedy).xml", lim);
+		sysCombSaveToXml(system, 1, buf);
+	}
+}
+
+void testProg4()
+{
+	cout.precision(3);
+	for(double rel = 0.8; rel <= 1.0; rel += 0.01) {
+		cout << rel << " => ";
+		double slp = 0.97;
+		//cout << genCostCurve(rel, slp) << ", ";
+		cout << genCost(rel, slp, 15.0, 1.0) << endl;
+	}
 }
 
 int main(int argc, const char** argv)
