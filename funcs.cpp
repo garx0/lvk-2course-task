@@ -3,278 +3,13 @@
 #include <string>
 #include <algorithm>
 #include <cstdlib>
+#include "./src/pugixml.hpp"
 
-
+#include "system.h"
+#include "funcs.h"
+#include "exceptions.h"
 
 using namespace std;
-
-//test comment
-
-class Exc {
-public:
-	enum class Type {
-		UNKNOWN_ERR,
-		BAD_ARGS
-	};
-private:
-	Type type;
-public:
-	Exc(Type a_type = Type::UNKNOWN_ERR): type(a_type) {}
-};
-
-class PugiXmlExc {
-	pugi::xml_parse_result result;
-public:
-	PugiXmlExc(pugi::xml_parse_result a_result): result(a_result) {}
-};
-
-
-struct Ware {
-	enum class Type { SW, HW };
-	//static char* const wareTypeStr[] = {"sw", "hw"};
-	static int typeToInt(Type type) {
-		return static_cast<int>(type);
-	}
-	static Type intToType(int num) {
-		if (num <= 0) {return Type::SW;} else {return Type::HW;}
-	}
-	double rel;
-	double cost;
-	int num;
-	Ware(): rel(1.0), cost(0.0), num(1) {}
-	Ware(double a_rel, double a_cost, int a_num): 
-		rel(a_rel), cost(a_cost), num(a_num) {}
-	bool operator< (const Ware& ware) const
-		{ return rel < ware.rel; }
-	bool operator> (const Ware& ware) const
-		{ return rel > ware.rel; }
-	bool operator<= (const Ware& ware) const
-		{ return rel <= ware.rel; }
-	bool operator>= (const Ware& ware) const
-		{ return rel >= ware.rel; }
-	bool operator== (const Ware& ware) const
-		{ return rel == ware.rel; }
-	bool operator!= (const Ware& ware) const
-		{ return rel != ware.rel; }
-};
-
-//const char* const Ware::wareTypeStr[] = {"sw", "hw"};
-struct Software : Ware {
-	static const Type type = Type::SW;
-	Software(): Ware() {}
-	Software(double rel, double cost, int num):
-		Ware(rel, cost, num) {}
-};
-struct Hardware : Ware {
-	static const Type type = Type::HW;
-	Hardware(): Ware() {}
-	Hardware(double rel, double cost, int num): 
-		Ware(rel, cost, num) {}
-};
-
-class System {
-public:
-
-private:
-	class Module {
-		friend System;
-		vector<Software> softVersions;
-		vector<Hardware> hardVersions;
-		int curSoftVersionNo;
-		int curHardVersionNo;
-		//при генерации системы поле num класса Ware совпадает с 
-		//порядковым (в плане интерфейса) номером ПО/оборудования 
-		//в данном модуле.
-		//если переставить элементы в векторе из версий ПО или оборуд.,
-		//то настоящие порядковые номера будут содержаться только в
-		//полях num этих версий
-		friend void sortVersions(System& system);
-	public:
-		Module(): softVersions(), hardVersions(), curSoftVersionNo(1), curHardVersionNo(1) {}
-		Module(const Module& module);
-		~Module() { 
-			//cout << "D mod" << endl; //DEBUG
-			softVersions.clear(); hardVersions.clear(); 
-			//cout << "/D mod" << endl; //DEBUG
-		}
-	};
-private:
-	vector<Module> modules;
-	double limitCost_;
-	//в реализации:
-	//	в векторах внутри Module и System нумерация идет от 0,
-	// 	в полях cur~~~~VersionNo_ - от 1
-	//в интерфейсе:
-	//	нумерация версий и модулей идет от 1
-	friend void sortVersions(System& system);
-public:
-	System(): limitCost_(0) {}
-	System(const System& system);
-	~System() { 
-		//cout << "D sys" << endl; //DEBUG
-		modules.clear(); 
-		//cout << "/D sys" << endl; //DEBUG
-	}
-	int getNModules() const {return modules.size();}
-	int getNWareVersions(int moduleNo, Ware::Type wareType) const;
-	const Ware& getWareVersion(int moduleNo, Ware::Type wareType, 
-		int versionNo) const;
-	void pushBackEmptyModule();
-	void pushBackWareVersion(int moduleNo, Ware::Type wareType, 
-		double rel, double cost, int num = 0);
-	int& curWareVersionNo(int moduleNo, Ware::Type wareType);
-	int curWareVersionNo(int moduleNo, Ware::Type wareType) const;
-	const Ware& getCurWareVersion(int moduleNo, 
-		Ware::Type wareType) const;
-	double getRel() const;
-	double getCost() const;
-	double getModuleRel(int moduleNo) const;
-	double getModuleCost(int moduleNo) const;
-	const double& limitCost() const {return limitCost_;}
-	double& limitCost() {return limitCost_;}
-	void clear();
-	void printTest() const; //DEBUG
-};
-
-//using namespace Ware;
-
-System::Module::Module(const Module& module) {
-	//cout << "KK mod" << endl; //DEBUG
-	softVersions = module.softVersions;
-	hardVersions = module.hardVersions;
-	curSoftVersionNo = module.curSoftVersionNo;
-	curHardVersionNo = module.curHardVersionNo;
-	//cout << "/KK mod" << endl;
-}
-
-System::System(const System& system)
-{
-	//cout << "KK sys" << endl; //DEBUG
-	modules = system.modules;
-	limitCost_ = system.limitCost_;
-	//cout << "/KK sys" << endl; //DEBUG
-}
-
-int System::getNWareVersions(int moduleNo, Ware::Type wareType) const
-{
-	switch(wareType) {
-		case Ware::Type::SW:
-			return modules[moduleNo - 1].softVersions.size();
-		case Ware::Type::HW:
-			return modules[moduleNo - 1].hardVersions.size();
-	}
-}
-
-const Ware& System::getWareVersion(int moduleNo, 
-		Ware::Type wareType, int versionNo) const
-{
-	//cout << "____" << versionNo - 1 << endl; //DEBUG
-	switch(wareType) {
-		case Ware::Type::SW:
-			return modules[moduleNo - 1].softVersions[versionNo - 1];
-		case Ware::Type::HW:
-			return modules[moduleNo - 1].hardVersions[versionNo - 1];
-	}
-}
-
-void System::pushBackEmptyModule()
-{
-	modules.push_back(Module());
-	//cout << "pushed back empty module" << endl; //DEBUG
-}
-
-void System::pushBackWareVersion(int moduleNo, Ware::Type wareType, 
-		double rel, double cost, int num)
-{
-	if(num == 0) {
-		num = getNWareVersions(moduleNo, wareType) + 1;
-	}
-	switch(wareType) {
-		case Ware::Type::SW:
-			modules[moduleNo - 1].softVersions.push_back(
-				Software(rel, cost, num) );
-			break;
-		case Ware::Type::HW:
-			modules[moduleNo - 1].hardVersions.push_back(
-				Hardware(rel, cost, num) );
-			break;
-	}
-}
-
-int& System::curWareVersionNo(int moduleNo, Ware::Type wareType)
-{
-	//cout << "int&\n"; //DEBUG
-	switch(wareType) {
-		case Ware::Type::SW:
-			return modules[moduleNo - 1].curSoftVersionNo;
-		case Ware::Type::HW:
-			return modules[moduleNo - 1].curHardVersionNo;
-	}
-}
-
-int System::curWareVersionNo(int moduleNo, Ware::Type wareType) const
-{
-	//cout << "int\n"; //DEBUG
-	switch(wareType) {
-		case Ware::Type::SW:
-			return modules[moduleNo - 1].curSoftVersionNo;
-		case Ware::Type::HW:
-			return modules[moduleNo - 1].curHardVersionNo;
-	}
-}
-
-const Ware& System::getCurWareVersion(int moduleNo, 
-		Ware::Type wareType) const
-{
-	return getWareVersion(moduleNo, wareType, 
-		curWareVersionNo(moduleNo, wareType) );
-}
-	
-double System::getRel() const
-{
-	int i;
-	double rel = 1.0;
-	int nModules = getNModules();
-	for(i = 1; i <= nModules; i++) {
-		rel *= getCurWareVersion(i, Ware::Type::SW).rel *
-			getCurWareVersion(i, Ware::Type::HW).rel;
-	}
-	return rel;
-}
-
-double System::getCost() const
-{
-	int i;
-	double cost = 0.0;
-	int nModules = getNModules();
-	for(i = 1; i <= nModules; i++) {
-		cost += getCurWareVersion(i, Ware::Type::SW).cost +
-			getCurWareVersion(i, Ware::Type::HW).cost;
-	}
-	return cost;
-}
-
-double System::getModuleRel(int moduleNo) const
-{
-	return getCurWareVersion(moduleNo, Ware::Type::SW).rel *
-		getCurWareVersion(moduleNo, Ware::Type::HW).rel;
-}
-
-double System::getModuleCost(int moduleNo) const
-{
-	return getCurWareVersion(moduleNo, Ware::Type::SW).cost +
-		getCurWareVersion(moduleNo, Ware::Type::HW).cost;
-}
-
-void System::clear()
-{
-	int n = modules.size();
-	for(int i = 0; i < n; i++) {
-		modules[i].softVersions.clear();
-		modules[i].hardVersions.clear();
-	}
-	modules.clear();
-}
 
 int randNum(int a, int b)
 {
@@ -282,7 +17,7 @@ int randNum(int a, int b)
 	return a + rand() % (b - a);
 }
 
-double randCoef(int divisions = 16384)
+double randCoef(int divisions)
 {
 	if(divisions <= 0) throw Exc(Exc::Type::BAD_ARGS);
 	double res = randNum(0, divisions);
@@ -330,8 +65,8 @@ double genCost(double rel, double slope, double cost90, double randomness)
 }
 
 void sysGen(System& system, int nModules, int nSoftVersions, 
-	int nHardVersions, double limitCost, double minRel = 0.8, double cost90 = 15.0, 
-	double costRandomness = 0.2, double costRelSlope = 0.97)
+	int nHardVersions, double limitCost, double minRel, double cost90,
+	double costRandomness, double costRelSlope)
 {
 	system.clear();
 	system.limitCost() = limitCost;
@@ -395,29 +130,6 @@ void sysReadFromXml(System& system, const char* filename)
 			}
 		}
 	}	
-}
-
-void System::printTest() const //DEBUG
-{
-	cout << "limitcost = " << limitCost_ << endl;
-	int n = modules.size();
-	for(int i = 0; i < n; i++) {
-		cout << "module " << i << ":" << endl;
-		int nSoft = modules[i].softVersions.size();
-		for(int j = 0; j < nSoft; j++) {
-			cout << "	soft " << j << ": rel = " <<
-				modules[i].softVersions[j].rel << ", cost = " <<
-				modules[i].softVersions[j].cost << ", num = " <<
-				modules[i].softVersions[j].num << endl;
-		}
-		int nHard = modules[i].hardVersions.size();
-		for(int j = 0; j < nHard; j++) {
-			cout << "	hard " << j << ": rel = " <<
-				modules[i].hardVersions[j].rel << ", cost = " <<
-				modules[i].hardVersions[j].cost << ", num = " <<
-				modules[i].hardVersions[j].num << endl;
-		}
-	}
 }
 
 void sysSaveToXml(const System& system, const char* filename)
@@ -486,24 +198,6 @@ void sysCombSaveToXml(const System& system, int iter, const char* filename)
 		}
 	}
 	doc.save_file(filename);
-}
-
-void sortVersions(System& system)
-//на получившейся системе могут некорректно работать,
-//например, алгоритмы поиска оптимальной комбинации,
-//т.к. в ней не совпадают порядковые номера версий
-//(в плане интерфейса) и поля num версий
-{
-	//System system1 = system; //DEBUG
- 	int nModules = system.getNModules();
-	for(int i = 0; i < nModules; i++) {
-		sort(system.modules[i].softVersions.begin(),
-			system.modules[i].softVersions.end() );
-		//третий арг. - operator< (по умолч.)
-		sort(system.modules[i].hardVersions.begin(),
-			system.modules[i].hardVersions.end() );
-		//третий арг. - operator< (по умолч.)
-	}
 }
 
 int findOptGenerous(System& system)
@@ -680,98 +374,4 @@ void findOptGreedy_(System& system, int firstModuleNo, int lastModuleNo)
 void findOptGreedy(System& system)
 {
 	findOptGreedy_( system, 1, system.getNModules() );
-}
-
-void testProg1(const char* inFile, const char* outFileGenerous, 
-	const char* outFileGreedy)
-{
-	System system;
-	sysReadFromXml(system, inFile);
-	int iter = findOptGenerous(system);
-	sysCombSaveToXml(system, iter, outFileGenerous);
-	findOptGreedy(system);
-	sysCombSaveToXml(system, 1, outFileGreedy);
-}
-
-void testProg2()
-{
-	System system;
-	sysReadFromXml(system, "example.xml");
-	int saveLim = system.limitCost();
-	int iter;
-	char buf[64];
-	cout.precision(3);
-	for(int lim = 150; lim <= 310; lim += 10) {
-		system.limitCost() = lim;
-		
-		iter = findOptGenerous(system);
-		cout << "rel(" << lim << ", generous) = " << 
-			system.getRel() << endl;
-		sprintf(buf, "out(%d)(generous).xml", lim);
-		sysCombSaveToXml(system, iter, buf);
-		
-		findOptGreedy(system);
-		cout << "rel(" << lim << ",   greedy) = " << 
-			system.getRel() << endl << endl;
-		sprintf(buf, "out(%d)(greedy).xml", lim);
-		sysCombSaveToXml(system, 1, buf);
-	}
-	system.limitCost() = saveLim;
-}
-
-void testProg3()
-{
-	System system;
-	sysGen(system, 5, 5, 7, 300, 0.75, 15.0, 0.0);
-	system.printTest();
-	sysSaveToXml(system, "out1.xml");
-	System system1 = system;
-	sortVersions(system1);
-	sysSaveToXml(system1, "out2.xml");
-	system1.printTest();
-	char buf[64];
-	for(int lim = 230; lim > 0; lim -= 10) {
-		system.limitCost() = lim;
-		
-		int iter = findOptGenerous(system);
-		cout << "rel(" << lim << ", generous) = " << 
-			system.getRel() << endl;
-		sprintf(buf, "out(%d)(generous).xml", lim);
-		sysCombSaveToXml(system, iter, buf);
-		
-		findOptGreedy(system);
-		cout << "rel(" << lim << ",   greedy) = " << 
-			system.getRel() << endl << endl;
-		sprintf(buf, "out(%d)(greedy).xml", lim);
-		sysCombSaveToXml(system, 1, buf);
-	}
-}
-
-void testProg4()
-{
-	cout.precision(3);
-	for(double rel = 0.8; rel <= 1.0; rel += 0.01) {
-		cout << rel << " => ";
-		double slp = 0.97;
-		//cout << genCostCurve(rel, slp) << ", ";
-		cout << genCost(rel, slp, 15.0, 1.0) << endl;
-	}
-}
-
-int main(int argc, const char** argv)
-{
-	srand(10);
-	/*
-	System system;
-	sysReadFromXml(system, "example.xml");
-	System system1 = system;
-	sortVersions(system1);
-	system.printTest();
-	system1.printTest();
-	sysSaveToXml(system, "out.xml");
-	sysSaveToXml(system, "out2.xml");
-	*/
-	//testProg1("example.xml", "out(generous).xml", "out(greedy).xml");
-	testProg3();
-	return 0;
 }
