@@ -61,17 +61,25 @@ void testProg3()
 	for(int lim = 230; lim > 0; lim -= 10) {
 		system.limitCost() = lim;
 		
-		int iter = findOptGenerous(system);
-		cout << "rel(" << lim << ", generous) = " << 
+		int iter = findOptGenerous(system, 1);
+		cout << "rel(" << lim << ", generousv1) = " << 
 			system.getRel() << endl;
-		sprintf(buf, "out(%d)(generous).xml", lim);
-		sysCombSaveToXml(system, iter, buf);
+		sprintf(buf, "out(%d)(generousv1).xml", lim);
+		//sysCombSaveToXml(system, iter, buf);
 		
+		iter = findOptGenerous(system, 2);
+		cout << "rel(" << lim << ", generousv2) = " << 
+			system.getRel() << endl;
+		sprintf(buf, "out(%d)(generousv2).xml", lim);
+		//sysCombSaveToXml(system, iter, buf);
+		
+		/*
 		findOptGreedy(system);
 		cout << "rel(" << lim << ",   greedy) = " << 
 			system.getRel() << endl << endl;
 		sprintf(buf, "out(%d)(greedy).xml", lim);
-		sysCombSaveToXml(system, 1, buf);
+		*/
+		//sysCombSaveToXml(system, 1, buf);
 	}
 }
 

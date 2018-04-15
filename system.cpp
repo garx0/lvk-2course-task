@@ -26,6 +26,17 @@ System::System(const System& system)
 	//cout << "/KK sys" << endl; //DEBUG
 }
 
+/*
+static Ware::Type Ware::intToType(int num)
+{
+	switch(num) {
+		case 0: return Type::SW;
+		case 1: return Type::HW;
+		default: throw Exc(Exc::Type::BAD_ARGS);
+	}
+}
+*/
+
 int System::getNModules() const
 {
 	return modules.size();
@@ -158,8 +169,6 @@ void System::clear()
 	modules.clear();
 }
 
-
-
 void System::printTest() const //DEBUG
 {
 	cout << "limitcost = " << limitCost_ << endl;
@@ -183,24 +192,55 @@ void System::printTest() const //DEBUG
 	}
 }
 
-
-
-void sortVersions(System& system)
+void sortVersions(System& system, int variant)
 //на получившейся системе могут некорректно работать,
 //например, алгоритмы поиска оптимальной комбинации,
 //т.к. в ней не совпадают порядковые номера версий
 //(в плане интерфейса) и поля num версий
 {
 	//System system1 = system; //DEBUG
+	
  	int nModules = system.getNModules();
 	for(int i = 0; i < nModules; i++) {
-		sort(system.modules[i].softVersions.begin(),
-			system.modules[i].softVersions.end() );
-		//третий арг. - operator< (по умолч.)
-		sort(system.modules[i].hardVersions.begin(),
-			system.modules[i].hardVersions.end() );
-		//третий арг. - operator< (по умолч.)
+		switch(variant) {
+			case 1: 
+				sort(system.modules[i].softVersions.begin(),
+					system.modules[i].softVersions.end(), cmpLess1);
+				sort(system.modules[i].hardVersions.begin(),
+					system.modules[i].hardVersions.end(), cmpLess1);
+				break;
+			case 2:
+				sort(system.modules[i].softVersions.begin(),
+					system.modules[i].softVersions.end(), cmpLess2);
+				sort(system.modules[i].hardVersions.begin(),
+					system.modules[i].hardVersions.end(), cmpLess2);
+				break;
+			default:
+				throw Exc(Exc::Type::BAD_ARGS);
+		}
 	}
 }
 
+bool cmpLess1(const Ware& ware1, const Ware& ware2)
+{
+	return ware1.rel < ware2.rel;
+}
 
+bool cmpLess2(const Ware& ware1, const Ware& ware2)
+{
+	static double eps = 0.01;
+	if(abs(ware1.rel - ware2.rel) >= eps) {
+		return ware1.rel < ware2.rel;
+	} else {
+		return ware1.cost < ware2.cost;
+	}
+}
+
+bool cmpLess(const Ware& ware1, const Ware& ware2, int variant)
+{
+	switch(variant) {
+		case 1: return cmpLess1(ware1, ware2);
+		case 2: return cmpLess2(ware1, ware2);
+		default: throw Exc(Exc::Type::BAD_ARGS);
+	}
+}

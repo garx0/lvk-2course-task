@@ -200,7 +200,7 @@ void sysCombSaveToXml(const System& system, int iter, const char* filename)
 	doc.save_file(filename);
 }
 
-int findOptGenerous(System& system)
+int findOptGenerous(System& system, int variant)
 //returns number of iterations
 //во входной системе должны совпадать порядковые номера версий
 //(в плане интерфейса) и поля num версий, иначе алгоритм работает
@@ -216,7 +216,7 @@ int findOptGenerous(System& system)
 	double cost0, cost;
 	double limitCost = system.limitCost();
 	System system1 = system;
-	sortVersions(system1);
+	sortVersions(system1, variant);
 	int nModules = system.getNModules();
 	for(int i = 1; i <= nModules; i++) {
 		for(int k = 0; k < 2; k++) {

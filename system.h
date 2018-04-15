@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cstdlib>
 
+#include "exceptions.h"
+
 using namespace std;
 
 struct Ware {
@@ -15,7 +17,11 @@ struct Ware {
 		return static_cast<int>(type);
 	}
 	static Type intToType(int num) {
-		if (num <= 0) {return Type::SW;} else {return Type::HW;}
+		switch(num) {
+			case 0: return Type::SW;
+			case 1: return Type::HW;
+			default: throw Exc(Exc::Type::BAD_ARGS);
+		}
 	}
 	double rel;
 	double cost;
@@ -35,6 +41,8 @@ struct Ware {
 		{ return rel == ware.rel; }
 	bool operator!= (const Ware& ware) const
 		{ return rel != ware.rel; }
+	bool cmpLess1(const Ware& ware) const;
+	bool cmpLess2(const Ware& ware) const;
 };
 
 struct Software : Ware {
@@ -43,6 +51,7 @@ struct Software : Ware {
 	Software(double rel, double cost, int num):
 		Ware(rel, cost, num) {}
 };
+
 struct Hardware : Ware {
 	static const Type type = Type::HW;
 	Hardware(): Ware() {}
@@ -63,7 +72,7 @@ class System {
 		//если переставить элементы в векторе из версий ПО или оборуд.,
 		//то настоящие порядковые номера будут содержаться только в
 		//полях num этих версий
-		friend void sortVersions(System& system);
+		friend void sortVersions(System& system, int variant = 1);
 	public:
 		Module(): softVersions(), hardVersions(), curSoftVersionNo(1), curHardVersionNo(1) {}
 		Module(const Module& module);
@@ -81,7 +90,7 @@ class System {
 	// 	в полях cur~~~~VersionNo_ - от 1
 	//в интерфейсе:
 	//	нумерация версий и модулей идет от 1
-	friend void sortVersions(System& system);
+	friend void sortVersions(System& system, int variant);
 public:
 	System(): limitCost_(0) {}
 	System(const System& system);
@@ -110,3 +119,10 @@ public:
 	void clear();
 	void printTest() const; //DEBUG
 };
+
+
+bool cmpLess1(const Ware& ware1, const Ware& ware2);
+
+bool cmpLess2(const Ware& ware1, const Ware& ware2);
+
+bool cmpLess(const Ware& ware1, const Ware& ware2, int variant = 1);

@@ -34,7 +34,7 @@ void sysSaveToXml(const System& system, const char* filename);
 
 void sysCombSaveToXml(const System& system, int iter, const char* filename);
 
-int findOptGenerous(System& system);
+int findOptGenerous(System& system, int variant = 1);
 //returns number of iterations
 //во входной системе должны совпадать порядковые номера версий
 //(в плане интерфейса) и поля num версий, иначе алгоритм работает
