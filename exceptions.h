@@ -16,6 +16,7 @@ public:
 	Exc(Type a_type = UNKNOWN_ERR): type(a_type) {}
 	Type getType() const;
 	void printErrMsg(ostream& stream) const;
+	// Печатает сообщение об ошибке в заданный поток
 };
 
 class PugiXmlExc {
@@ -24,5 +25,6 @@ public:
 	PugiXmlExc(pugi::xml_parse_result a_result): result(a_result) {}
 	pugi::xml_parse_result getResult() const;
 	void printErrMsg(ostream& stream) const;
+	// Печатает сообщение об ошибке в заданный поток
 };
 

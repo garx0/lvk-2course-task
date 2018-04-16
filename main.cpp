@@ -10,41 +10,43 @@
 
 using namespace std;
 
-void testProg1(const char* inFile, const char* outFileGenerous, 
-	const char* outFileBrute)
-{
-	System system;
-	sysReadFromXml(system, inFile);
-	int iter = findOptGenerous(system);
-	sysCombSaveToXml(system, iter, outFileGenerous);
-	findOptBrute(system);
-	sysCombSaveToXml(system, 1, outFileBrute);
-}
-
-void testProg2()
+void testsOnExample()
 {
 	System system;
 	sysReadFromXml(system, "example.xml");
-	int saveLim = system.limitCost();
+	char buf[256];
 	int iter;
-	char buf[64];
-	cout.precision(3);
-	for(int lim = 150; lim <= 310; lim += 10) {
+	double limitCost = system.limitCost();
+	double rel, cost;
+	for(double lim = 140.0; lim <= 310.0; lim += 10.0) {
 		system.limitCost() = lim;
-		
-		iter = findOptGenerous(system);
-		cout << "rel(" << lim << ", generous) = " << 
-			system.getRel() << endl;
-		sprintf(buf, "out(%d)(generous).xml", lim);
-		sysCombSaveToXml(system, iter, buf);
-		
-		findOptBrute(system);
-		cout << "rel(" << lim << ",   brute) = " << 
-			system.getRel() << endl << endl;
-		sprintf(buf, "out(%d)(brute).xml", lim);
-		sysCombSaveToXml(system, 1, buf);
+		for(int variant = 1; variant <= 4; variant++) {
+			iter = findOptGenerous(system, variant);
+			rel = iter > 0 ? system.getRel() : 0.0;
+			cost = iter > 0 ? system.getCost() : 0.0;
+			printf("rel(limitCost = %5.5g, alg = generous%d) = %5.5lf, cost = %5.5g, iter = %d\n",
+				lim, variant, rel, cost, iter);
+			sprintf(buf, "out(%.3lf)(generousv%d).xml", lim, variant);
+			sysConfigSaveToXml(system, iter, buf);
+		}
+		for(int variant = 1; variant <= 4; variant++) {
+			iter = findOptGenerousBwd(system, variant);
+			rel = iter > 0 ? system.getRel() : 0.0;
+			cost = iter > 0 ? system.getCost() : 0.0;
+			printf("rel(limitCost = %5.5g, alg = generousBwd%d) = %5.5lf, cost = %5.5g, iter = %d\n",
+				lim, variant, rel, cost, iter);
+			sprintf(buf, "out(%.3lf)(generousBwdv%d).xml", lim, variant);
+			sysConfigSaveToXml(system, iter, buf);
+		}
+		iter = findOptBrute(system);
+		rel = iter > 0 ? system.getRel() : 0.0;
+		cost = iter > 0 ? system.getCost() : 0.0;
+		printf("rel(limitCost = %5.5g, alg =     brute) = %5.5lf, cost = %5.5g, iter = %d\n",
+				lim, rel, cost, iter);
+		sprintf(buf, "out(%.3lf)(brute).xml", lim);
+		sysConfigSaveToXml(system, 1, buf);
+		cout << endl;
 	}
-	system.limitCost() = saveLim;
 }
 
 void testProg3()
@@ -75,7 +77,7 @@ void testProg3()
 			printf("rel(limitCost = %5.5g, alg = generous%d) = %5.5lf, cost = %5.5g, iter = %d\n",
 				lim, variant, system.getRel(), system.getCost(), iter);
 			//sprintf(buf, "out(%.3lf)(generousv%d).xml", lim, variant);
-			//sysCombSaveToXml(system, iter, buf);
+			//sysConfigSaveToXml(system, iter, buf);
 		}
 		/*
 		iter = findOptBrute(system);
@@ -83,7 +85,7 @@ void testProg3()
 				lim, system.getRel(), system.getCost(), iter);
 		*/
 		//sprintf(buf, "out(%d)(brute).xml", lim);
-		//sysCombSaveToXml(system, 1, buf);
+		//sysConfigSaveToXml(system, 1, buf);
 		cout << endl;
 	}
 }
@@ -99,30 +101,40 @@ void testProg4()
 	}
 }
 
-void saveOptGenerous(const System& system, int variant, const char* filename)
+void saveOptGenerous(const System& system, int variant, const char* fileNamePrefix)
+/* Пример задания аргумента fileNamePrefix:
+ * fileNamePrefix = "example"
+ * => file names:
+ * "example (generous-v1).xml"
+ * ...
+ * "example (generous-v4).xml"
+ */
 {
 	if(variant < 1 || variant > 4) throw Exc(Exc::BAD_ARGS);
 	System system1 = system;
 	char buf[1024];
 	int iter = findOptGenerous(system1, variant);
-	sprintf(buf, "%s (generous-v%d).xml", filename, variant);
-	sysCombSaveToXml(system1, iter, buf);
+	sprintf(buf, "%s (generous-v%d).xml", fileNamePrefix, variant);
+	sysConfigSaveToXml(system1, iter, buf);
 }
 
-void saveOptBrute(const System& system, const char* filename)
+void saveOptBrute(const System& system, const char* fileNamePrefix)
+/* Пример задания аргумента fileNamePrefix:
+ * fileNamePrefix = "example"
+ * => file name = "example (brute).xml"
+ */
 {
 	System system1 = system;
 	char buf[1024];
-	for(int variant = 2; variant <= 4; variant++) {
-		int iter = findOptBrute(system1);
-		sprintf(buf, "%s (brute).xml", filename);
-		sysCombSaveToXml(system1, iter, buf);
-	}
+	int iter = findOptBrute(system1);
+	sprintf(buf, "%s (brute).xml", fileNamePrefix);
+	sysConfigSaveToXml(system1, iter, buf);
 }
 	
 int main(int argc, const char** argv)
 {
 	try {
+		/*
 		System system;
 		sysReadFromXml(system, "example.xml");
 		//sysGen(system, 2, 2, 2);
@@ -133,6 +145,8 @@ int main(int argc, const char** argv)
 		saveOptGenerous(system, 3, "out.xml");
 		saveOptGenerous(system, 4, "out.xml");
 		saveOptBrute(system, "out.xml");
+		*/
+		testsOnExample();
 		return 0;
 	}
 	catch(const Exc& exc) {

@@ -26,12 +26,6 @@ double randCoef(int divisions)
 }
 
 double genCostCurve(double rel, double slope)
-//slope in (-1, 1), slope != +-1
-//slope = 0    => линейная зависимость
-//slope -> 1   => гиперболическая зависимость, выпукл вниз,
-//	крутизна в окрестности rel = 1 растет
-//slope -> -1  => гиперболическая зависимость, выпукл вверх,
-//	крутизна в окрестности rel = 0 растет
 {
 	if(rel < 0.0 || rel > 1.0) throw Exc(Exc::BAD_ARGS);
 	if(slope >= 1.0 || slope <= -1.0) throw Exc(Exc::BAD_ARGS);
@@ -48,7 +42,6 @@ double genCostCurve(double rel, double slope)
 }
 
 double genCost(double rel, double slope, double cost90, double randomness)
-//cost90 - стоимость ПО/оборуд. с надежностью 0.9 при randomness = 0;
 {
 	if(rel < 0.0 || rel > 1.0 || slope >= 1.0 || slope <= -1.0 ||
 			cost90 < 0.0 || randomness < 0.0 || randomness > 1.0) {
@@ -99,12 +92,9 @@ void sysGen(System& system, int nModules, int nSoftVersions,
 
 void sysReadFromXml(System& system, const char* filename)
 {
-//предполагается, что в xml-файле все модули и версии нумеруются
-//непрерывно монотонно, начиная с 1
 	system.clear();
 	pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file(filename);
-    //cout << "Load result: " << result.description() << endl; //DEBUG
     if(!result)
 		throw PugiXmlExc(result);
     pugi::xml_node sysNode = doc;
@@ -116,7 +106,6 @@ void sysReadFromXml(System& system, const char* filename)
 			iNode = iNode.next_sibling("module"), i++ )
 	{
 		system.pushBackEmptyModule();
-		//cout << "in i-cycle\n"; //DEBUG
 		for(int k = 0; k < 2; k++) {
 			Ware::Type wareType = Ware::intToType(k);
 			const char* wareTypeStr = k == 0 ? "sw" : "hw";
@@ -124,7 +113,6 @@ void sysReadFromXml(System& system, const char* filename)
 				jNode;
 				jNode = jNode.next_sibling(wareTypeStr) )
 			{
-				//cout << "in j-cycle1\n"; //DEBUG
 				string str1 = jNode.attribute("rel").value();
 				double rel = stod(str1);
 				string str2 = jNode.attribute("cost").value();
@@ -137,7 +125,6 @@ void sysReadFromXml(System& system, const char* filename)
 
 void sysSaveToXml(const System& system, const char* filename)
 {
-//сохраняет данные о системе и всех версиях оборудования
 	pugi::xml_document doc;
     pugi::xml_node sysNode = doc.append_child("system");
 	char buf[32];
@@ -150,7 +137,7 @@ void sysSaveToXml(const System& system, const char* filename)
 		for(int k = 0; k < 2; k++) {
 			Ware::Type wareType = Ware::intToType(k);
 			const char* wareTypeStr = 
-				wareType == Ware::SW ? "sw" : "hw"; //V replace with static
+				wareType == Ware::SW ? "sw" : "hw";
 			int nWare = system.getNWare(i, wareType);
 			for(int j = 1; j <= nWare; j++) {
 				pugi::xml_node wareNode = 
@@ -165,11 +152,10 @@ void sysSaveToXml(const System& system, const char* filename)
 			}
 		}
 	}
-    //doc.print(cout); //DEBUG
     doc.save_file(filename);
 }
 
-void sysCombSaveToXml(const System& system, int iter, const char* filename)
+void sysConfigSaveToXml(const System& system, int iter, const char* filename)
 {
 	if(iter > 0) {
 		pugi::xml_document doc;
@@ -189,7 +175,7 @@ void sysCombSaveToXml(const System& system, int iter, const char* filename)
 			for(int k = 0; k < 2; k++) {
 				Ware::Type wareType = Ware::intToType(k);
 				const char* wareTypeStr = 
-					wareType == Ware::SW ? "sw" : "hw"; //V...
+					wareType == Ware::SW ? "sw" : "hw";
 				pugi::xml_node wareNode = 
 						moduleNode.append_child(wareTypeStr);
 				Ware ware =
@@ -202,44 +188,67 @@ void sysCombSaveToXml(const System& system, int iter, const char* filename)
 			}
 		}
 		doc.save_file(filename);
-	} else if(iter == 0) {
+	} else {
+		char buf[256];
+		if(iter == 0) {
+			sprintf(buf, 
+				"Algorithm didn't find configuration with cost <= limitcost");
+		} else if(iter == -1) {
+			sprintf(buf, 
+				"Error: Incorrect input for the algorithm");
+		} else
+			throw Exc(Exc::BAD_ARGS);
 		pugi::xml_document doc;
 		pugi::xml_node sysNode = doc.append_child("system");
-		char buf[32];
-		sprintf(buf, "%.3g", system.limitCost() );
-		sysNode.append_attribute("limitcost") = buf;
+		char buf2[64];
+		sprintf(buf2, "%.3g", system.limitCost() );
+		sysNode.append_attribute("limitcost") = buf2;
 		sysNode.append_attribute("iteration") = iter;
-		sysNode.append_child(pugi::node_pcdata).set_value(
-			"Algorithm didn't find combination with cost <= limitcost");
+		sysNode.append_child(pugi::node_pcdata).set_value(buf);
 		doc.save_file(filename);
-	} else throw Exc(Exc::BAD_ARGS);
+	}
 }
 
-int findOptGenerous(System& system, int variant)
-//returns number of iterations
-//во входной системе должны совпадать порядковые номера версий
-//(в плане интерфейса) и поля num версий, иначе алгоритм работает
-//некорректно
-//этим условиям удовлетворяет любая система, созданная с помощью
-//интерфейса класса System.
-//не удовлетворяет - система, прошедшая через функцию sortVersions
+bool sysNumerIsCorrect(const System& system)
 {
-/*
- * a < b === должен ли a идти перед b
- * comp = operator<=
- */
+	int nModules = system.getNModules();
+	for(int i = 1; i <= nModules; i++) {
+		for(int k = 0; k < 2; k++) {
+			Ware::Type wareType = Ware::intToType(k);
+			int nWare = system.getNWare(i, wareType);
+			for(int j = 1; j <= nWare; j++) {
+				if(system.getWare(i, wareType, j).num != j)
+					return false;
+			}
+		}
+	}
+	return true;
+}
+	
+int findOptGenerous(System& system, int variant)
+{
+	if(!sysNumerIsCorrect) {
+		return -1;
+	}
 	double cost0, cost;
 	double limitCost = system.limitCost();
 	System system1 = system;
 	sortVersions(system1, variant);
+	/* Сортируем вектор по возрастанию относительно соотв. функции
+	 *     сравнения на "меньше".
+	 */
 	int nModules = system.getNModules();
 	for(int i = 1; i <= nModules; i++) {
 		for(int k = 0; k < 2; k++) {
 			Ware::Type wareType = Ware::intToType(k);
 			system1.curWareNo(i, wareType) = 1;
-				//1, т.к. берем наименее надежную
-				//пока храним в качестве curWareNo
-				//порядковый номер версии в отсортированном массиве
+			/* 1, т.к. берем наименее надежную.
+			 * Пока храним в качестве curWareNo порядковый номер
+			 *     версии ПО/О в отсортированном векторе
+			 *     (но нумерация от 1, а не как в векторе).
+			 * Исходные номера версий находятся в полях num
+			 *     версий ПО/О.
+			 */
 		}
 	}
 	cost0 = system1.getCost();
@@ -250,7 +259,10 @@ int findOptGenerous(System& system, int variant)
 	bool ok = cost0 <= limitCost;
 	if(!ok) return 0;
 	int iter = 1;
-	int cmpVar = variant == 4 ? 2 : variant;
+	int cmpVar = variant != 4 ? variant : 2;
+	/* в случае 4 варианта ищем, какую версию менять на следующую в 
+	 * отсортированном массиве, через функцию сравнения-2, а не 4
+	 */
 	while(ok) {
 		cost = cost0;
 		Ware testWare;
@@ -279,8 +291,9 @@ int findOptGenerous(System& system, int variant)
 			minWareType, minWareNo).cost
 				+ system1.getWare(minWareModuleNo,
 			minWareType, minWareNo + 1).cost;
-		//стоимость системы после замены версии ПО/оборуд.
-		//в одном из модулей
+		/* Пересчитываем стоимость системы после замены версии ПО/О
+		 *     в одном из модулей
+		 */
 		ok = cost0 <= limitCost;
 		if (ok) {
 			system1.curWareNo(minWareModuleNo, minWareType)++;
@@ -288,6 +301,94 @@ int findOptGenerous(System& system, int variant)
 		}
 	}
 	for(int i = 1; i <= nModules; i++) {
+		// Устанавливаем конфигурацию системы system по конфигурации
+		//     "отсортированной" системы system1
+		for(int k = 0; k < 2; k++) {
+			Ware::Type wareType = Ware::intToType(k);
+			int sortedCurWareNo = system1.curWareNo(i, wareType);
+			system.curWareNo(i, wareType) = 
+				system1.getCurWare(i, wareType).num;
+		}
+	}
+	return iter;
+}
+
+int findOptGenerousBwd(System& system, int variant)
+{
+	if(!sysNumerIsCorrect) {
+		return -1;
+	}
+	double cost0, cost;
+	double limitCost = system.limitCost();
+	System system1 = system;
+	sortVersions(system1, variant);
+	/* Сортируем вектор по возрастанию относительно соотв. функции
+	 *     сравнения на "меньше".
+	 */
+	int nModules = system.getNModules();
+	for(int i = 1; i <= nModules; i++) {
+		for(int k = 0; k < 2; k++) {
+			Ware::Type wareType = Ware::intToType(k);
+			system1.curWareNo(i, wareType) = 
+				system1.getNWare(i, wareType);
+			/* NWare, т.к. берем наиболее надежную.
+			 * Пока храним в качестве curWareNo порядковый номер
+			 *     версии ПО/О в отсортированном векторе
+			 *     (но нумерация от 1, а не как в векторе).
+			 * Исходные номера версий находятся в полях num
+			 *     версий ПО/О.
+			 */
+		}
+	}
+	cost0 = system1.getCost();
+	Ware maxWare;
+	int maxWareModuleNo;
+	Ware::Type maxWareType;
+	int maxWareNo;
+	bool ok = cost0 <= limitCost;
+	int iter = 1;
+	int cmpVar = variant != 4 ? variant : 2;
+	/* в случае 4 варианта ищем, какую версию менять на следующую в 
+	 * отсортированном массиве, через функцию сравнения-2, а не 4
+	 */
+	while(!ok) {
+		cost = cost0;
+		Ware testWare;
+		maxWare = Ware(-1.0, -1.0);
+		bool maxWareHasChanged = false;
+		for(int i = 1; i <= nModules; i++) {
+			for(int k = 0; k < 2; k++) {
+				Ware::Type wareType = 
+					Ware::intToType(k);
+				int wareNo = system1.curWareNo(i, wareType);
+				testWare = 
+					system1.getWare(i, wareType, wareNo);
+				if( cmpLess(maxWare, testWare, cmpVar) && wareNo > 1 )
+				{
+					maxWareHasChanged = true;
+					maxWare = testWare;
+					maxWareModuleNo = i;
+					maxWareType = wareType;
+					maxWareNo = wareNo;
+				}
+			}
+		}
+		if(!maxWareHasChanged) break;
+		cost0 += - system1.getWare(maxWareModuleNo,
+			maxWareType, maxWareNo).cost
+				+ system1.getWare(maxWareModuleNo,
+			maxWareType, maxWareNo - 1).cost;
+		/* Пересчитываем стоимость системы после замены версии ПО/О
+		 *     в одном из модулей
+		 */
+		ok = cost0 <= limitCost;
+		system1.curWareNo(maxWareModuleNo, maxWareType)--;
+		iter++;
+	}
+	if(!ok) return 0;
+	for(int i = 1; i <= nModules; i++) {
+		// Устанавливаем конфигурацию системы system по конфигурации
+		//     "отсортированной" системы system1
 		for(int k = 0; k < 2; k++) {
 			Ware::Type wareType = Ware::intToType(k);
 			int sortedCurWareNo = system1.curWareNo(i, wareType);
@@ -320,7 +421,7 @@ void findOptBrute_(System& system, int firstModuleNo, int lastModuleNo)
 	double cost;
 	double rel;
 	double maxRel = -1.0;
-	System bestComb = system;
+	System bestConfig = system;
 	int& modNo = firstModuleNo;
 	if(nModulesPart == 1) {
 		for(int i = 1; i <= nSoftVs; i++) {
@@ -357,11 +458,11 @@ void findOptBrute_(System& system, int firstModuleNo, int lastModuleNo)
 				*/
 				if(rel > maxRel && cost <= limitCost) {
 					maxRel = rel;
-					bestComb = system;
+					bestConfig = system;
 				}
 			}
 		}
-		system = bestComb;
+		system = bestConfig;
 	} else {
 		//nModulesPart > 1
 		for(int i = 1; i <= nSoftVs; i++) {
@@ -373,11 +474,11 @@ void findOptBrute_(System& system, int firstModuleNo, int lastModuleNo)
 				rel = system.getRel();
 				if(rel > maxRel && cost <= limitCost) {
 					maxRel = rel;
-					bestComb = system;
+					bestConfig = system;
 				}
 			}
 		}
-		system = bestComb;
+		system = bestConfig;
 	}		
 }
 
@@ -389,7 +490,7 @@ int findOptBrute(System& system)
 	return system.getCost() <= system.limitCost() ? 1 : 0;
 }
 
-void sysRndComb(System& system)
+void sysRndConfig(System& system)
 //генерирует случайную комбинацию для системы
 {
 	int nModules = system.getNModules();
@@ -407,10 +508,10 @@ double sysAvgCost(const System& system, int nTests)
 //среднее арифметическое её случайных комбинаций в количестве nTests
 {
 	System system1 = system;
-	sysRndComb(system1);
+	sysRndConfig(system1);
 	double avgCost = system1.getCost();
 	for(int n = 1; n < nTests; n++) {
-		sysRndComb(system1);
+		sysRndConfig(system1);
 		avgCost *= (double) n / (n + 1);
 		avgCost += system1.getCost() / (n + 1);
 	}

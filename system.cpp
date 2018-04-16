@@ -9,20 +9,16 @@
 using namespace std;
 
 System::Module::Module(const Module& module) {
-	//cout << "KK mod" << endl; //DEBUG
 	softVersions = module.softVersions;
 	hardVersions = module.hardVersions;
 	curSoftVersionNo = module.curSoftVersionNo;
 	curHardVersionNo = module.curHardVersionNo;
-	//cout << "/KK mod" << endl;
 }
 
 System::System(const System& system)
 {
-	//cout << "KK sys" << endl; //DEBUG
 	modules = system.modules;
 	limitCost_ = system.limitCost_;
-	//cout << "/KK sys" << endl; //DEBUG
 }
 
 System& System::operator=(const System& system)
@@ -32,17 +28,6 @@ System& System::operator=(const System& system)
 	limitCost_ = system.limitCost_;
 	return *this;
 }
-
-/*
-static Ware::Type Ware::intToType(int num)
-{
-	switch(num) {
-		case 0: return SW;
-		case 1: return HW;
-		default: throw Exc(Exc::BAD_ARGS);
-	}
-}
-*/
 
 int System::getNModules() const
 {
@@ -142,18 +127,6 @@ double System::getCost() const
 			getCurWare(i, Ware::HW).cost;
 	}
 	return cost;
-}
-
-double System::getModuleRel(int moduleNo) const
-{
-	return getCurWare(moduleNo, Ware::SW).rel *
-		getCurWare(moduleNo, Ware::HW).rel;
-}
-
-double System::getModuleCost(int moduleNo) const
-{
-	return getCurWare(moduleNo, Ware::SW).cost +
-		getCurWare(moduleNo, Ware::HW).cost;
 }
 
 double System::limitCost() const
@@ -265,11 +238,11 @@ bool cmpLess4_(const Ware& ware1, const Ware& ware2,
 //если надежности не сильно различаются, а стоимости - сильно, то
 //выбираем в пользу цены.
 {
-	if(abs(ware1.rel - ware2.rel) >= relDiffThres) {
+	if(abs(ware1.rel - ware2.rel) > relDiffThres) {
 		return ware1.rel < ware2.rel;
 	} else {
 		double costRelation = ware1.cost / ware2.cost;
-		if(costRelation >= 1.0) {
+		if(costRelation > 1.0) {
 			costRelation = 1 / costRelation;
 		}
 		//мультипликативный аналог ( -|num| ) числа costRelation
