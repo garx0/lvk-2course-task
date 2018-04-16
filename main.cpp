@@ -49,7 +49,7 @@ void testsOnExample(ostream& stream = cout)
 		stream << buf;		
 		sprintf(buf, "./tests_on_example/out(%.3lf)(brute).xml", lim);
 		sysConfigSaveToXml(system, 1, buf);
-		cout << endl;
+		stream << endl;
 	}
 }
 
