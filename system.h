@@ -11,23 +11,23 @@
 using namespace std;
 
 struct Ware {
-	enum class Type { SW, HW };
+	enum Type { SW, HW };
 	//static char* const wareTypeStr[] = {"sw", "hw"};
 	static int typeToInt(Type type) {
 		return static_cast<int>(type);
 	}
 	static Type intToType(int num) {
 		switch(num) {
-			case 0: return Type::SW;
-			case 1: return Type::HW;
-			default: throw Exc(Exc::Type::BAD_ARGS);
+			case 0: return SW;
+			case 1: return HW;
+			default: throw Exc(Exc::BAD_ARGS);
 		}
 	}
 	double rel;
 	double cost;
 	int num;
 	Ware(): rel(1.0), cost(0.0), num(1) {}
-	Ware(double a_rel, double a_cost, int a_num): 
+	Ware(double a_rel, double a_cost, int a_num = 1): 
 		rel(a_rel), cost(a_cost), num(a_num) {}
 	bool operator< (const Ware& ware) const
 		{ return rel < ware.rel; }
@@ -46,14 +46,14 @@ struct Ware {
 };
 
 struct Software : Ware {
-	static const Type type = Type::SW;
+	static const Type type = SW;
 	Software(): Ware() {}
 	Software(double rel, double cost, int num):
 		Ware(rel, cost, num) {}
 };
 
 struct Hardware : Ware {
-	static const Type type = Type::HW;
+	static const Type type = HW;
 	Hardware(): Ware() {}
 	Hardware(double rel, double cost, int num): 
 		Ware(rel, cost, num) {}
@@ -74,7 +74,8 @@ class System {
 		//полях num этих версий
 		friend void sortVersions(System& system, int variant = 1);
 	public:
-		Module(): softVersions(), hardVersions(), curSoftVersionNo(1), curHardVersionNo(1) {}
+		Module(): softVersions(), hardVersions(), 
+			curSoftVersionNo(1), curHardVersionNo(1) {}
 		Module(const Module& module);
 		~Module() { 
 			//cout << "D mod" << endl; //DEBUG
@@ -99,16 +100,17 @@ public:
 		modules.clear(); 
 		//cout << "/D sys" << endl; //DEBUG
 	}
+	System& operator=(const System& system);
 	int getNModules() const;
-	int getNWareVersions(int moduleNo, Ware::Type wareType) const;
-	const Ware& getWareVersion(int moduleNo, Ware::Type wareType, 
+	int getNWare(int moduleNo, Ware::Type wareType) const;
+	const Ware& getWare(int moduleNo, Ware::Type wareType, 
 		int versionNo) const;
 	void pushBackEmptyModule();
-	void pushBackWareVersion(int moduleNo, Ware::Type wareType, 
+	void pushBackWare(int moduleNo, Ware::Type wareType, 
 		double rel, double cost, int num = 0);
-	int& curWareVersionNo(int moduleNo, Ware::Type wareType);
-	int curWareVersionNo(int moduleNo, Ware::Type wareType) const;
-	const Ware& getCurWareVersion(int moduleNo, 
+	int& curWareNo(int moduleNo, Ware::Type wareType);
+	int curWareNo(int moduleNo, Ware::Type wareType) const;
+	const Ware& getCurWare(int moduleNo, 
 		Ware::Type wareType) const;
 	double getRel() const;
 	double getCost() const;
@@ -121,8 +123,10 @@ public:
 };
 
 
-bool cmpLess1(const Ware& ware1, const Ware& ware2);
-
-bool cmpLess2(const Ware& ware1, const Ware& ware2);
-
-bool cmpLess(const Ware& ware1, const Ware& ware2, int variant = 1);
+bool cmpLess1(const Ware&, const Ware&);
+bool cmpLess2(const Ware&, const Ware&);
+bool cmpLess3(const Ware&, const Ware&);
+bool cmpLess4_(const Ware&, const Ware&, 
+	double relDiffThres, double costRelationThres);
+bool cmpLess4(const Ware&, const Ware&);
+bool cmpLess(const Ware&, const Ware&, int variant = 1);

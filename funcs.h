@@ -24,7 +24,7 @@ double genCost(double rel, double slope, double cost90, double randomness);
 //cost90 - стоимость ПО/оборуд. с надежностью 0.9 при randomness = 0;
 
 void sysGen(System& system, int nModules, int nSoftVersions, 
-	int nHardVersions, double limitCost, double minRel = 0.8, double cost90 = 15.0, 
+	int nHardVersions, double limitCost = 0.0, double minRel = 0.8, double cost90 = 15.0, 
 	double costRandomness = 0.2, double costRelSlope = 0.97);
 
 void sysReadFromXml(System& system, const char* filename);
@@ -43,10 +43,13 @@ int findOptGenerous(System& system, int variant = 1);
 //интерфейса класса System.
 //не удовлетворяет - система, прошедшая через функцию sortVersions
 
-void findOptGreedy_(System& system, int firstModuleNo, int lastModuleNo);
+void findOptBrute_(System& system, int firstModuleNo, int lastModuleNo);
 //найти оптимальную комбинацию путем перебора комбинаций модулей
 //с номерами в заданных пределах, при фиксированных комбинациях
 //остальных модулей системы
 
-void findOptGreedy(System& system);
+int findOptBrute(System& system);
 
+void sysRndComb(System& system);
+
+double sysAvgCost(const System& system, int nTests = 1000);

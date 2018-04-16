@@ -26,13 +26,21 @@ System::System(const System& system)
 	//cout << "/KK sys" << endl; //DEBUG
 }
 
+System& System::operator=(const System& system)
+{
+	clear();
+	modules = system.modules;
+	limitCost_ = system.limitCost_;
+	return *this;
+}
+
 /*
 static Ware::Type Ware::intToType(int num)
 {
 	switch(num) {
-		case 0: return Type::SW;
-		case 1: return Type::HW;
-		default: throw Exc(Exc::Type::BAD_ARGS);
+		case 0: return SW;
+		case 1: return HW;
+		default: throw Exc(Exc::BAD_ARGS);
 	}
 }
 */
@@ -42,23 +50,23 @@ int System::getNModules() const
 	return modules.size();
 }
 
-int System::getNWareVersions(int moduleNo, Ware::Type wareType) const
+int System::getNWare(int moduleNo, Ware::Type wareType) const
 {
 	switch(wareType) {
-		case Ware::Type::SW:
+		case Ware::SW:
 			return modules[moduleNo - 1].softVersions.size();
-		case Ware::Type::HW:
+		case Ware::HW:
 			return modules[moduleNo - 1].hardVersions.size();
 	}
 }
 
-const Ware& System::getWareVersion(int moduleNo, 
+const Ware& System::getWare(int moduleNo, 
 		Ware::Type wareType, int versionNo) const
 {
 	switch(wareType) {
-		case Ware::Type::SW:
+		case Ware::SW:
 			return modules[moduleNo - 1].softVersions[versionNo - 1];
-		case Ware::Type::HW:
+		case Ware::HW:
 			return modules[moduleNo - 1].hardVersions[versionNo - 1];
 	}
 }
@@ -68,49 +76,49 @@ void System::pushBackEmptyModule()
 	modules.push_back(Module());
 }
 
-void System::pushBackWareVersion(int moduleNo, Ware::Type wareType, 
+void System::pushBackWare(int moduleNo, Ware::Type wareType, 
 		double rel, double cost, int num)
 {
 	if(num == 0) {
-		num = getNWareVersions(moduleNo, wareType) + 1;
+		num = getNWare(moduleNo, wareType) + 1;
 	}
 	switch(wareType) {
-		case Ware::Type::SW:
+		case Ware::SW:
 			modules[moduleNo - 1].softVersions.push_back(
 				Software(rel, cost, num) );
 			break;
-		case Ware::Type::HW:
+		case Ware::HW:
 			modules[moduleNo - 1].hardVersions.push_back(
 				Hardware(rel, cost, num) );
 			break;
 	}
 }
 
-int& System::curWareVersionNo(int moduleNo, Ware::Type wareType)
+int& System::curWareNo(int moduleNo, Ware::Type wareType)
 {
 	switch(wareType) {
-		case Ware::Type::SW:
+		case Ware::SW:
 			return modules[moduleNo - 1].curSoftVersionNo;
-		case Ware::Type::HW:
+		case Ware::HW:
 			return modules[moduleNo - 1].curHardVersionNo;
 	}
 }
 
-int System::curWareVersionNo(int moduleNo, Ware::Type wareType) const
+int System::curWareNo(int moduleNo, Ware::Type wareType) const
 {
 	switch(wareType) {
-		case Ware::Type::SW:
+		case Ware::SW:
 			return modules[moduleNo - 1].curSoftVersionNo;
-		case Ware::Type::HW:
+		case Ware::HW:
 			return modules[moduleNo - 1].curHardVersionNo;
 	}
 }
 
-const Ware& System::getCurWareVersion(int moduleNo, 
+const Ware& System::getCurWare(int moduleNo, 
 		Ware::Type wareType) const
 {
-	return getWareVersion(moduleNo, wareType, 
-		curWareVersionNo(moduleNo, wareType) );
+	return getWare(moduleNo, wareType, 
+		curWareNo(moduleNo, wareType) );
 }
 	
 double System::getRel() const
@@ -119,8 +127,8 @@ double System::getRel() const
 	double rel = 1.0;
 	int nModules = getNModules();
 	for(i = 1; i <= nModules; i++) {
-		rel *= getCurWareVersion(i, Ware::Type::SW).rel *
-			getCurWareVersion(i, Ware::Type::HW).rel;
+		rel *= getCurWare(i, Ware::SW).rel *
+			getCurWare(i, Ware::HW).rel;
 	}
 	return rel;
 }
@@ -131,22 +139,22 @@ double System::getCost() const
 	double cost = 0.0;
 	int nModules = getNModules();
 	for(i = 1; i <= nModules; i++) {
-		cost += getCurWareVersion(i, Ware::Type::SW).cost +
-			getCurWareVersion(i, Ware::Type::HW).cost;
+		cost += getCurWare(i, Ware::SW).cost +
+			getCurWare(i, Ware::HW).cost;
 	}
 	return cost;
 }
 
 double System::getModuleRel(int moduleNo) const
 {
-	return getCurWareVersion(moduleNo, Ware::Type::SW).rel *
-		getCurWareVersion(moduleNo, Ware::Type::HW).rel;
+	return getCurWare(moduleNo, Ware::SW).rel *
+		getCurWare(moduleNo, Ware::HW).rel;
 }
 
 double System::getModuleCost(int moduleNo) const
 {
-	return getCurWareVersion(moduleNo, Ware::Type::SW).cost +
-		getCurWareVersion(moduleNo, Ware::Type::HW).cost;
+	return getCurWare(moduleNo, Ware::SW).cost +
+		getCurWare(moduleNo, Ware::HW).cost;
 }
 
 double System::limitCost() const
@@ -215,8 +223,20 @@ void sortVersions(System& system, int variant)
 				sort(system.modules[i].hardVersions.begin(),
 					system.modules[i].hardVersions.end(), cmpLess2);
 				break;
+			case 3:
+				sort(system.modules[i].softVersions.begin(),
+					system.modules[i].softVersions.end(), cmpLess3);
+				sort(system.modules[i].hardVersions.begin(),
+					system.modules[i].hardVersions.end(), cmpLess3);
+				break;
+			case 4:
+				sort(system.modules[i].softVersions.begin(),
+					system.modules[i].softVersions.end(), cmpLess4);
+				sort(system.modules[i].hardVersions.begin(),
+					system.modules[i].hardVersions.end(), cmpLess4);
+				break;
 			default:
-				throw Exc(Exc::Type::BAD_ARGS);
+				throw Exc(Exc::BAD_ARGS);
 		}
 	}
 }
@@ -228,12 +248,43 @@ bool cmpLess1(const Ware& ware1, const Ware& ware2)
 
 bool cmpLess2(const Ware& ware1, const Ware& ware2)
 {
-	static double eps = 0.01;
-	if(abs(ware1.rel - ware2.rel) >= eps) {
+	if(ware1.rel != ware2.rel) {
 		return ware1.rel < ware2.rel;
 	} else {
 		return ware1.cost < ware2.cost;
 	}
+}
+
+bool cmpLess3(const Ware& ware1, const Ware& ware2)
+{
+	return ware1.cost < ware2.cost;
+}
+
+bool cmpLess4_(const Ware& ware1, const Ware& ware2, 
+	double relDiffThres, double costRelationThres)
+//если надежности сильно различаются, выбираем в пользу надежности.
+//если надежности не сильно различаются, а стоимости - сильно, то
+//выбираем в пользу цены.
+{
+	if(abs(ware1.rel - ware2.rel) >= relDiffThres) {
+		return ware1.rel < ware2.rel;
+	} else {
+		double costRelation = ware1.cost / ware2.cost;
+		if(costRelation >= 1.0) {
+			costRelation = 1 / costRelation;
+		}
+		//мультипликативный аналог ( -|num| ) числа costRelation
+		if(costRelation < costRelationThres) {
+			return ware1.cost < ware2.cost;
+		} else {
+			return ware1.rel < ware2.rel;
+		}
+	}
+}
+
+bool cmpLess4(const Ware& ware1, const Ware& ware2)
+{
+	return cmpLess4_(ware1, ware2, 0.01, 0.9);
 }
 
 bool cmpLess(const Ware& ware1, const Ware& ware2, int variant)
@@ -241,6 +292,8 @@ bool cmpLess(const Ware& ware1, const Ware& ware2, int variant)
 	switch(variant) {
 		case 1: return cmpLess1(ware1, ware2);
 		case 2: return cmpLess2(ware1, ware2);
-		default: throw Exc(Exc::Type::BAD_ARGS);
+		case 3: return cmpLess3(ware1, ware2);
+		case 4: return cmpLess4(ware1, ware2);
+		default: throw Exc(Exc::BAD_ARGS);
 	}
 }

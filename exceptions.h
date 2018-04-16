@@ -4,14 +4,14 @@
 
 class Exc {
 public:
-	enum class Type {
+	enum Type {
 		UNKNOWN_ERR,
 		BAD_ARGS
 	};
 private:
 	Type type;
 public:
-	Exc(Type a_type = Type::UNKNOWN_ERR): type(a_type) {}
+	Exc(Type a_type = UNKNOWN_ERR): type(a_type) {}
 };
 
 class PugiXmlExc {
