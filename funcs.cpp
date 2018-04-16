@@ -36,8 +36,8 @@ double genCostCurve(double rel, double slope)
 	double coef;
 	coef = ( 1/(1/a - rel) - a ) / ( 1/(1/a - 1) - a );
 	//coef in [0,1]
-	if(coef >= 1.0) {cout << "coef >= 1" << endl; return 1.0;}
-	if(coef <= 0.0) {cout << "coef <= 1" << endl; return 0.0;}
+	if(coef >= 1.0) return 1.0;
+	if(coef <= 0.0) return 0.0;
 	return slope > 0 ? coef : 1 - coef;
 }
 
