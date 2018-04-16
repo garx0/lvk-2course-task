@@ -3,8 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <algorithm>
-#include <cstdlib>
 
 #include "exceptions.h"
 
@@ -29,18 +27,6 @@ struct Ware {
 	Ware(): rel(1.0), cost(0.0), num(1) {}
 	Ware(double a_rel, double a_cost, int a_num = 1): 
 		rel(a_rel), cost(a_cost), num(a_num) {}
-	bool operator< (const Ware& ware) const
-		{ return rel < ware.rel; }
-	bool operator> (const Ware& ware) const
-		{ return rel > ware.rel; }
-	bool operator<= (const Ware& ware) const
-		{ return rel <= ware.rel; }
-	bool operator>= (const Ware& ware) const
-		{ return rel >= ware.rel; }
-	bool operator== (const Ware& ware) const
-		{ return rel == ware.rel; }
-	bool operator!= (const Ware& ware) const
-		{ return rel != ware.rel; }
 	bool cmpLess1(const Ware& ware) const;
 	bool cmpLess2(const Ware& ware) const;
 };

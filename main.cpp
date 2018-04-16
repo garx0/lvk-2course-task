@@ -122,18 +122,24 @@ void saveOptBrute(const System& system, const char* filename)
 	
 int main(int argc, const char** argv)
 {
-	System system;
-	sysReadFromXml(system, "example.xml");
-	//sysGen(system, 2, 2, 2);
-	system.limitCost() = 150;
-	//sysSaveToXml(system, "in.xml");
-	cout << "read\n";
-	saveOptGenerous(system, 1, "out.xml");
-	saveOptGenerous(system, 2, "out.xml");
-	saveOptGenerous(system, 3, "out.xml");
-	saveOptGenerous(system, 4, "out.xml");
-	cout << "generous\n";
-	saveOptBrute(system, "out.xml");
-	cout << "brute\n";
-	return 0;
+	try {
+		System system;
+		sysReadFromXml(system, "example.xml");
+		//sysGen(system, 2, 2, 2);
+		system.limitCost() = 150;
+		//sysSaveToXml(system, "in.xml");
+		saveOptGenerous(system, 1, "out.xml");
+		saveOptGenerous(system, 2, "out.xml");
+		saveOptGenerous(system, 3, "out.xml");
+		saveOptGenerous(system, 4, "out.xml");
+		saveOptBrute(system, "out.xml");
+		return 0;
+	}
+	catch(const Exc& exc) {
+		exc.printErrMsg(cerr);
+	}
+	catch(const PugiXmlExc& exc) {
+		exc.printErrMsg(cerr);
+	}
+	return -1;
 }
