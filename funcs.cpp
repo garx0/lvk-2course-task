@@ -399,9 +399,6 @@ int findOptGenerousBwd(System& system, int variant)
 }
 
 void findOptBrute_(System& system, int firstModuleNo, int lastModuleNo)
-//найти оптимальную комбинацию путем перебора комбинаций модулей
-//с номерами в заданных пределах, при фиксированных комбинациях
-//остальных модулей системы
 {
 	int nModules = system.getNModules();
 	if(firstModuleNo <= 0 || lastModuleNo <= 0) {
@@ -476,15 +473,12 @@ void findOptBrute_(System& system, int firstModuleNo, int lastModuleNo)
 }
 
 int findOptBrute(System& system)
-//алгоритм поиска оптимальной комбинации системы путём полного перебора
-//возращает число итераций (в данном случае 1) в случае успеха, 0 иначе
 {
 	findOptBrute_( system, 1, system.getNModules() );
 	return system.getCost() <= system.limitCost() ? 1 : 0;
 }
 
 void sysRndConfig(System& system)
-//генерирует случайную комбинацию для системы
 {
 	int nModules = system.getNModules();
 	for(int i = 1; i <= nModules; i++) {
@@ -497,8 +491,6 @@ void sysRndConfig(System& system)
 }
 
 double sysAvgCost(const System& system, int nTests)
-//считает стоимость средней комбинации системы как
-//среднее арифметическое её случайных комбинаций в количестве nTests
 {
 	System system1 = system;
 	sysRndConfig(system1);

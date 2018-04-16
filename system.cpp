@@ -150,10 +150,6 @@ void System::clear()
 }
 
 void sortVersions(System& system, int variant)
-//на получившейся системе могут некорректно работать,
-//например, алгоритмы поиска оптимальной комбинации,
-//т.к. в ней не совпадают порядковые номера версий
-//(в плане интерфейса) и поля num версий
 {
  	int nModules = system.getNModules();
 	for(int i = 0; i < nModules; i++) {
