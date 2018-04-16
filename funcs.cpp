@@ -75,7 +75,6 @@ void sysGen(System& system, int nModules, int nSoftVersions,
 			Ware::Type wareType = Ware::intToType(k);
 			int nWare = wareType ==
 				Ware::SW ? nSoftVersions : nHardVersions;
-			//nWare += randNum(-2, 2); if(nWare <= 0) {nWare = 1;}
 			for(int j = 1; j <= nWare; j++) {
 				rel = minRel + (1 - minRel) * randCoef();
 				cost = genCost(rel, costRelSlope, cost90, costRandomness);
@@ -450,12 +449,6 @@ void findOptBrute_(System& system, int firstModuleNo, int lastModuleNo)
 					cost = system.getCost();
 					rel = system.getRel();
 				}
-				/*
-				int test = cost == system.getCost(); //DEBUG
-				cout << "cost == system.getCost() = " << test << endl; //DEBUG
-				double test2 = abs(rel - system.getRel() ); //DEBUG
-				cout << "|rel - system.getRel()| = " << test2 << endl; //DEBUG
-				*/
 				if(rel > maxRel && cost <= limitCost) {
 					maxRel = rel;
 					bestConfig = system;

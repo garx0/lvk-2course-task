@@ -149,29 +149,6 @@ void System::clear()
 	modules.clear();
 }
 
-void System::printTest() const //DEBUG
-{
-	cout << "limitcost = " << limitCost_ << endl;
-	int n = modules.size();
-	for(int i = 0; i < n; i++) {
-		cout << "module " << i << ":" << endl;
-		int nSoft = modules[i].softVersions.size();
-		for(int j = 0; j < nSoft; j++) {
-			cout << "	soft " << j << ": rel = " <<
-				modules[i].softVersions[j].rel << ", cost = " <<
-				modules[i].softVersions[j].cost << ", num = " <<
-				modules[i].softVersions[j].num << endl;
-		}
-		int nHard = modules[i].hardVersions.size();
-		for(int j = 0; j < nHard; j++) {
-			cout << "	hard " << j << ": rel = " <<
-				modules[i].hardVersions[j].rel << ", cost = " <<
-				modules[i].hardVersions[j].cost << ", num = " <<
-				modules[i].hardVersions[j].num << endl;
-		}
-	}
-}
-
 void sortVersions(System& system, int variant)
 //на получившейся системе могут некорректно работать,
 //например, алгоритмы поиска оптимальной комбинации,

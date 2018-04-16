@@ -154,7 +154,6 @@ public:
 	 */
 	void clear();
 	// Очищает всю информацию в данном объекте типа System.
-	void printTest() const; //DEBUG
 };
 
 
