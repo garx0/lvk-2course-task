@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<system limitcost="389" rel="0.149" cost="362" iteration="177">
+	<module num="1">
+		<sw num="4" rel="0.904" cost="13.7" />
+		<hw num="5" rel="0.917" cost="11.4" />
+	</module>
+	<module num="2">
+		<sw num="9" rel="0.902" cost="46.4" />
+		<hw num="3" rel="0.906" cost="36.2" />
+	</module>
+	<module num="3">
+		<sw num="4" rel="0.907" cost="0.381" />
+		<hw num="2" rel="0.902" cost="12.3" />
+	</module>
+	<module num="4">
+		<sw num="7" rel="0.915" cost="7.68" />
+		<hw num="6" rel="0.905" cost="3.83" />
+	</module>
+	<module num="5">
+		<sw num="9" rel="0.905" cost="41.8" />
+		<hw num="3" rel="0.916" cost="18" />
+	</module>
+	<module num="6">
+		<sw num="5" rel="0.907" cost="46.8" />
+		<hw num="4" rel="0.918" cost="5.46" />
+	</module>
+	<module num="7">
+		<sw num="8" rel="0.901" cost="26.8" />
+		<hw num="7" rel="0.906" cost="4.16" />
+	</module>
+	<module num="8">
+		<sw num="5" rel="0.920" cost="9.99" />
+		<hw num="10" rel="0.903" cost="13" />
+	</module>
+	<module num="9">
+		<sw num="4" rel="0.902" cost="15.4" />
+		<hw num="6" rel="0.931" cost="26.9" />
+	</module>
+	<module num="10">
+		<sw num="7" rel="0.907" cost="4.41" />
+		<hw num="10" rel="0.911" cost="17.1" />
+	</module>
+</system>

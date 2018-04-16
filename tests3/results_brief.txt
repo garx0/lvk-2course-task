@@ -1,0 +1,99 @@
+rel(limitCost = 1508.7, alg =    generous1) = 0.90091, cost = 1297.9, iter = 181
+rel(limitCost = 1508.7, alg =    generous2) = 0.90091, cost = 1297.9, iter = 181
+rel(limitCost = 1508.7, alg =    generous3) = 0.88002, cost = 1305.5, iter = 181
+rel(limitCost = 1508.7, alg =    generous4) = 0.90091, cost = 1297.9, iter = 181
+rel(limitCost = 1508.7, alg = generousBwd1) = 0.90091, cost = 1297.9, iter = 1
+rel(limitCost = 1508.7, alg = generousBwd2) = 0.90091, cost = 1297.9, iter = 1
+rel(limitCost = 1508.7, alg = generousBwd3) = 0.88002, cost = 1305.5, iter = 1
+rel(limitCost = 1508.7, alg = generousBwd4) = 0.90091, cost = 1297.9, iter = 1
+
+rel(limitCost =  1383, alg =    generous1) = 0.90091, cost = 1297.9, iter = 181
+rel(limitCost =  1383, alg =    generous2) = 0.90091, cost = 1297.9, iter = 181
+rel(limitCost =  1383, alg =    generous3) = 0.88002, cost = 1305.5, iter = 181
+rel(limitCost =  1383, alg =    generous4) = 0.90091, cost = 1297.9, iter = 181
+rel(limitCost =  1383, alg = generousBwd1) = 0.90091, cost = 1297.9, iter = 1
+rel(limitCost =  1383, alg = generousBwd2) = 0.90091, cost = 1297.9, iter = 1
+rel(limitCost =  1383, alg = generousBwd3) = 0.88002, cost = 1305.5, iter = 1
+rel(limitCost =  1383, alg = generousBwd4) = 0.90091, cost = 1297.9, iter = 1
+
+rel(limitCost = 1257.2, alg =    generous1) = 0.87788, cost = 1238.1, iter = 172
+rel(limitCost = 1257.2, alg =    generous2) = 0.87788, cost = 1238.1, iter = 172
+rel(limitCost = 1257.2, alg =    generous3) = 0.84861, cost = 1253.9, iter = 175
+rel(limitCost = 1257.2, alg =    generous4) = 0.89016, cost = 1254.2, iter = 175
+rel(limitCost = 1257.2, alg = generousBwd1) = 0.88440, cost = 1256.7, iter = 2
+rel(limitCost = 1257.2, alg = generousBwd2) = 0.88440, cost = 1256.7, iter = 2
+rel(limitCost = 1257.2, alg = generousBwd3) = 0.84255, cost = 1241.2, iter = 4
+rel(limitCost = 1257.2, alg = generousBwd4) = 0.87579, cost = 1255.8, iter = 3
+
+rel(limitCost = 1131.5, alg =    generous1) = 0.79787, cost = 1109.2, iter = 161
+rel(limitCost = 1131.5, alg =    generous2) = 0.79787, cost = 1109.2, iter = 161
+rel(limitCost = 1131.5, alg =    generous3) = 0.75945, cost = 1130.6, iter = 157
+rel(limitCost = 1131.5, alg =    generous4) = 0.81273, cost = 1128.8, iter = 161
+rel(limitCost = 1131.5, alg = generousBwd1) = 0.82337, cost = 1127.7, iter = 9
+rel(limitCost = 1131.5, alg = generousBwd2) = 0.82337, cost = 1127.7, iter = 9
+rel(limitCost = 1131.5, alg = generousBwd3) = 0.75724, cost = 1113.2, iter = 11
+rel(limitCost = 1131.5, alg = generousBwd4) = 0.79122, cost = 1120.8, iter = 12
+
+rel(limitCost = 1005.8, alg =    generous1) = 0.74970, cost = 999.94, iter = 152
+rel(limitCost = 1005.8, alg =    generous2) = 0.74970, cost = 999.94, iter = 152
+rel(limitCost = 1005.8, alg =    generous3) = 0.62306, cost = 1002.5, iter = 144
+rel(limitCost = 1005.8, alg =    generous4) = 0.77124, cost = 1004.9, iter = 154
+rel(limitCost = 1005.8, alg = generousBwd1) = 0.72369, cost = 998.01, iter = 22
+rel(limitCost = 1005.8, alg = generousBwd2) = 0.72369, cost = 998.01, iter = 22
+rel(limitCost = 1005.8, alg = generousBwd3) = 0.68516, cost = 1002.9, iter = 17
+rel(limitCost = 1005.8, alg = generousBwd4) = 0.63988, cost = 974.82, iter = 27
+
+rel(limitCost = 880.07, alg =    generous1) = 0.65377, cost = 847.03, iter = 140
+rel(limitCost = 880.07, alg =    generous2) = 0.65377, cost = 847.03, iter = 140
+rel(limitCost = 880.07, alg =    generous3) = 0.54332, cost = 879.39, iter = 134
+rel(limitCost = 880.07, alg =    generous4) = 0.67285, cost = 869.13, iter = 140
+rel(limitCost = 880.07, alg = generousBwd1) = 0.63811, cost = 876.44, iter = 28
+rel(limitCost = 880.07, alg = generousBwd2) = 0.63811, cost = 876.44, iter = 28
+rel(limitCost = 880.07, alg = generousBwd3) = 0.58032, cost = 871.96, iter = 29
+rel(limitCost = 880.07, alg = generousBwd4) = 0.59693, cost = 873.05, iter = 33
+
+rel(limitCost = 754.35, alg =    generous1) = 0.59878, cost = 737.4, iter = 134
+rel(limitCost = 754.35, alg =    generous2) = 0.59878, cost = 737.4, iter = 134
+rel(limitCost = 754.35, alg =    generous3) = 0.45950, cost = 724.79, iter = 121
+rel(limitCost = 754.35, alg =    generous4) = 0.60732, cost = 752.84, iter = 131
+rel(limitCost = 754.35, alg = generousBwd1) = 0.55535, cost = 735.68, iter = 41
+rel(limitCost = 754.35, alg = generousBwd2) = 0.55535, cost = 735.68, iter = 41
+rel(limitCost = 754.35, alg = generousBwd3) = 0.47653, cost = 749.17, iter = 45
+rel(limitCost = 754.35, alg = generousBwd4) = 0.49301, cost = 737.58, iter = 48
+
+rel(limitCost = 628.62, alg =    generous1) = 0.46405, cost = 612.93, iter = 104
+rel(limitCost = 628.62, alg =    generous2) = 0.46405, cost = 612.93, iter = 104
+rel(limitCost = 628.62, alg =    generous3) = 0.33930, cost = 627.37, iter = 104
+rel(limitCost = 628.62, alg =    generous4) = 0.48943, cost =   603, iter = 111
+rel(limitCost = 628.62, alg = generousBwd1) = 0.48096, cost = 612.71, iter = 55
+rel(limitCost = 628.62, alg = generousBwd2) = 0.48096, cost = 612.71, iter = 55
+rel(limitCost = 628.62, alg = generousBwd3) = 0.35573, cost = 626.6, iter = 67
+rel(limitCost = 628.62, alg = generousBwd4) = 0.42715, cost = 627.24, iter = 62
+
+rel(limitCost = 502.9, alg =    generous1) = 0.33473, cost = 500.06, iter = 74
+rel(limitCost = 502.9, alg =    generous2) = 0.33473, cost = 500.06, iter = 74
+rel(limitCost = 502.9, alg =    generous3) = 0.29960, cost = 502.22, iter = 69
+rel(limitCost = 502.9, alg =    generous4) = 0.35069, cost = 495.54, iter = 72
+rel(limitCost = 502.9, alg = generousBwd1) = 0.35177, cost = 501.12, iter = 90
+rel(limitCost = 502.9, alg = generousBwd2) = 0.35177, cost = 501.12, iter = 90
+rel(limitCost = 502.9, alg = generousBwd3) = 0.27506, cost = 499.63, iter = 104
+rel(limitCost = 502.9, alg = generousBwd4) = 0.28238, cost = 495.85, iter = 104
+
+rel(limitCost = 377.17, alg =    generous1) = 0.15846, cost = 376.91, iter = 8
+rel(limitCost = 377.17, alg =    generous2) = 0.15846, cost = 376.91, iter = 8
+rel(limitCost = 377.17, alg =    generous3) = 0.24270, cost = 376.79, iter = 36
+rel(limitCost = 377.17, alg =    generous4) = 0.28556, cost = 376.08, iter = 55
+rel(limitCost = 377.17, alg = generousBwd1) = 0.20723, cost = 375.64, iter = 135
+rel(limitCost = 377.17, alg = generousBwd2) = 0.20723, cost = 375.64, iter = 135
+rel(limitCost = 377.17, alg = generousBwd3) = 0.26337, cost = 372.64, iter = 134
+rel(limitCost = 377.17, alg = generousBwd4) = 0.15151, cost = 372.45, iter = 168
+
+rel(limitCost = 251.45, alg =    generous1) = 0.00000, cost =     0, iter = 0
+rel(limitCost = 251.45, alg =    generous2) = 0.00000, cost =     0, iter = 0
+rel(limitCost = 251.45, alg =    generous3) = 0.21411, cost = 250.53, iter = 10
+rel(limitCost = 251.45, alg =    generous4) = 0.00000, cost =     0, iter = 0
+rel(limitCost = 251.45, alg = generousBwd1) = 0.00000, cost =     0, iter = 0
+rel(limitCost = 251.45, alg = generousBwd2) = 0.00000, cost =     0, iter = 0
+rel(limitCost = 251.45, alg = generousBwd3) = 0.20458, cost = 247.42, iter = 162
+rel(limitCost = 251.45, alg = generousBwd4) = 0.00000, cost =     0, iter = 0
+

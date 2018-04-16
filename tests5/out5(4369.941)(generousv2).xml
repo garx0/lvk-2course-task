@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<system limitcost="4.37e+03" rel="0.468" cost="4.36e+03" iteration="339">
+	<module num="1">
+		<sw num="34" rel="0.991" cost="47.5" />
+		<hw num="21" rel="0.991" cost="53.9" />
+	</module>
+	<module num="2">
+		<sw num="22" rel="0.991" cost="49.5" />
+		<hw num="15" rel="0.991" cost="50.4" />
+	</module>
+	<module num="3">
+		<sw num="48" rel="0.989" cost="53.8" />
+		<hw num="42" rel="0.992" cost="56.5" />
+	</module>
+	<module num="4">
+		<sw num="5" rel="0.992" cost="59.4" />
+		<hw num="18" rel="0.989" cost="44.5" />
+	</module>
+	<module num="5">
+		<sw num="25" rel="0.992" cost="50.6" />
+		<hw num="12" rel="0.982" cost="45" />
+	</module>
+	<module num="6">
+		<sw num="13" rel="0.991" cost="60" />
+		<hw num="5" rel="0.990" cost="56.5" />
+	</module>
+	<module num="7">
+		<sw num="32" rel="0.992" cost="61.7" />
+		<hw num="42" rel="0.988" cost="46" />
+	</module>
+	<module num="8">
+		<sw num="8" rel="0.991" cost="54.3" />
+		<hw num="50" rel="0.992" cost="49.2" />
+	</module>
+	<module num="9">
+		<sw num="39" rel="0.991" cost="54.1" />
+		<hw num="22" rel="0.992" cost="61.7" />
+	</module>
+	<module num="10">
+		<sw num="50" rel="0.992" cost="56.1" />
+		<hw num="13" rel="0.991" cost="55.1" />
+	</module>
+	<module num="11">
+		<sw num="50" rel="0.986" cost="42.2" />
+		<hw num="5" rel="0.992" cost="60.6" />
+	</module>
+	<module num="12">
+		<sw num="30" rel="0.992" cost="55.4" />
+		<hw num="2" rel="0.992" cost="61.8" />
+	</module>
+	<module num="13">
+		<sw num="42" rel="0.988" cost="47.9" />
+		<hw num="14" rel="0.992" cost="62.5" />
+	</module>
+	<module num="14">
+		<sw num="7" rel="0.991" cost="48.9" />
+		<hw num="9" rel="0.992" cost="50.8" />
+	</module>
+	<module num="15">
+		<sw num="3" rel="0.992" cost="51" />
+		<hw num="17" rel="0.991" cost="56.4" />
+	</module>
+	<module num="16">
+		<sw num="51" rel="0.988" cost="57.1" />
+		<hw num="41" rel="0.990" cost="59.5" />
+	</module>
+	<module num="17">
+		<sw num="1" rel="0.992" cost="58.9" />
+		<hw num="44" rel="0.984" cost="41" />
+	</module>
+	<module num="18">
+		<sw num="39" rel="0.992" cost="58.9" />
+		<hw num="13" rel="0.987" cost="53.9" />
+	</module>
+	<module num="19">
+		<sw num="21" rel="0.991" cost="54.1" />
+		<hw num="18" rel="0.991" cost="60.9" />
+	</module>
+	<module num="20">
+		<sw num="31" rel="0.992" cost="58" />
+		<hw num="20" rel="0.991" cost="57.1" />
+	</module>
+	<module num="21">
+		<sw num="26" rel="0.991" cost="56.6" />
+		<hw num="49" rel="0.990" cost="54" />
+	</module>
+	<module num="22">
+		<sw num="33" rel="0.991" cost="54.9" />
+		<hw num="36" rel="0.989" cost="57.4" />
+	</module>
+	<module num="23">
+		<sw num="19" rel="0.991" cost="53.8" />
+		<hw num="13" rel="0.992" cost="55.2" />
+	</module>
+	<module num="24">
+		<sw num="2" rel="0.991" cost="51.7" />
+		<hw num="17" rel="0.992" cost="62.4" />
+	</module>
+	<module num="25">
+		<sw num="45" rel="0.992" cost="52" />
+		<hw num="20" rel="0.987" cost="51.1" />
+	</module>
+	<module num="26">
+		<sw num="30" rel="0.991" cost="60.3" />
+		<hw num="19" rel="0.992" cost="56.7" />
+	</module>
+	<module num="27">
+		<sw num="17" rel="0.992" cost="60.8" />
+		<hw num="37" rel="0.991" cost="49.5" />
+	</module>
+	<module num="28">
+		<sw num="42" rel="0.991" cost="51" />
+		<hw num="18" rel="0.992" cost="49.6" />
+	</module>
+	<module num="29">
+		<sw num="3" rel="0.990" cost="56" />
+		<hw num="26" rel="0.988" cost="54.9" />
+	</module>
+	<module num="30">
+		<sw num="39" rel="0.992" cost="56.9" />
+		<hw num="23" rel="0.989" cost="52.7" />
+	</module>
+	<module num="31">
+		<sw num="60" rel="0.992" cost="56.2" />
+		<hw num="22" rel="0.992" cost="61.2" />
+	</module>
+	<module num="32">
+		<sw num="20" rel="0.988" cost="45.5" />
+		<hw num="39" rel="0.992" cost="58.3" />
+	</module>
+	<module num="33">
+		<sw num="56" rel="0.991" cost="53.2" />
+		<hw num="13" rel="0.992" cost="49.8" />
+	</module>
+	<module num="34">
+		<sw num="27" rel="0.989" cost="55.5" />
+		<hw num="32" rel="0.992" cost="57.9" />
+	</module>
+	<module num="35">
+		<sw num="46" rel="0.992" cost="61.7" />
+		<hw num="22" rel="0.991" cost="59.9" />
+	</module>
+	<module num="36">
+		<sw num="53" rel="0.992" cost="54.1" />
+		<hw num="6" rel="0.988" cost="55.7" />
+	</module>
+	<module num="37">
+		<sw num="44" rel="0.990" cost="52.1" />
+		<hw num="4" rel="0.992" cost="54.6" />
+	</module>
+	<module num="38">
+		<sw num="14" rel="0.992" cost="52.5" />
+		<hw num="27" rel="0.991" cost="58.3" />
+	</module>
+	<module num="39">
+		<sw num="27" rel="0.992" cost="57.9" />
+		<hw num="45" rel="0.992" cost="51.4" />
+	</module>
+	<module num="40">
+		<sw num="59" rel="0.986" cost="47.7" />
+		<hw num="19" rel="0.990" cost="57.6" />
+	</module>
+</system>

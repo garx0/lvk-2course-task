@@ -178,8 +178,6 @@ void sortVersions(System& system, int variant)
 //т.к. в ней не совпадают порядковые номера версий
 //(в плане интерфейса) и поля num версий
 {
-	//System system1 = system; //DEBUG
-	
  	int nModules = system.getNModules();
 	for(int i = 0; i < nModules; i++) {
 		switch(variant) {
@@ -234,9 +232,6 @@ bool cmpLess3(const Ware& ware1, const Ware& ware2)
 
 bool cmpLess4_(const Ware& ware1, const Ware& ware2, 
 	double relDiffThres, double costRelationThres)
-//если надежности сильно различаются, выбираем в пользу надежности.
-//если надежности не сильно различаются, а стоимости - сильно, то
-//выбираем в пользу цены.
 {
 	if(abs(ware1.rel - ware2.rel) > relDiffThres) {
 		return ware1.rel < ware2.rel;
