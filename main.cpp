@@ -118,6 +118,23 @@ void saveOptGenerous(const System& system, int variant, const char* fileNamePref
 	sysConfigSaveToXml(system1, iter, buf);
 }
 
+void saveOptGenerousBwd(const System& system, int variant, const char* fileNamePrefix)
+/* Пример задания аргумента fileNamePrefix:
+ * fileNamePrefix = "example"
+ * => file names:
+ * "example (generous-v1).xml"
+ * ...
+ * "example (generous-v4).xml"
+ */
+{
+	if(variant < 1 || variant > 4) throw Exc(Exc::BAD_ARGS);
+	System system1 = system;
+	char buf[1024];
+	int iter = findOptGenerousBwd(system1, variant);
+	sprintf(buf, "%s (generousBwd-v%d).xml", fileNamePrefix, variant);
+	sysConfigSaveToXml(system1, iter, buf);
+}
+
 void saveOptBrute(const System& system, const char* fileNamePrefix)
 /* Пример задания аргумента fileNamePrefix:
  * fileNamePrefix = "example"
